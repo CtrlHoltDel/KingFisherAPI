@@ -1,0 +1,4 @@
+DROP DATABASE IF EXISTS kfnotes;
+CREATE DATABASE kfnotes;
+DROP DATABASE IF EXISTS kfnotes_test;
+CREATE DATABASE kfnotes_test;
