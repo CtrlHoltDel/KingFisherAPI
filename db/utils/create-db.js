@@ -15,23 +15,25 @@ const createTables = async () => {
         name VARCHAR(255),
         type VARCHAR,
         created_time TIMESTAMP DEFAULT NOW(),
-        created_by VARCHAR(255)
+        created_by VARCHAR(255) REFERENCES users(username),
+        note_group_id INTEGER REFERENCES note_group(id),
+        UNIQUE (note_group_id, name)
     );`;
 
   const noteGroup = `CREATE TABLE note_group (
         id SERIAL PRIMARY KEY,
         name VARCHAR NOT NULL,
-        created TIMESTAMP DEFAULT NOW(),
-        created_by VARCHAR(255)
+        created_time TIMESTAMP DEFAULT NOW(),
+        created_by VARCHAR REFERENCES users(username)
     );`;
 
   const notes = `CREATE TABLE notes(
         id SERIAL PRIMARY KEY,
-        player_id INTEGER NOT NULL REFERENCES players(id),
-        created_at TIMESTAMP DEFAULT NOW(),
+        created_by VARCHAR(255) REFERENCES users(username),
+        created_time TIMESTAMP DEFAULT NOW(),
         note VARCHAR,
-        created_by VARCHAR(255),
-        note_group_id INTEGER NOT NULL REFERENCES note_group(id)
+        player_id INTEGER REFERENCES players(id), 
+        type VARCHAR
     );`;
 
   const noteGroupJunction = `CREATE TABLE note_group_junction (
@@ -43,11 +45,15 @@ const createTables = async () => {
     );`;
 
   await db.query(users);
-  await db.query(players);
+  console.log(`Table Created users`)
   await db.query(noteGroup);
-  await db.query(noteGroupJunction);
+  console.log(`Table Created note_group`)
+  await db.query(players);
+  console.log(`Table Created players`)
   await db.query(notes);
-  db.end();
+  console.log(`Table Created notes`)
+  await db.query(noteGroupJunction);
+  console.log(`Table Created note_group_junction`)
 };
 
 const dropTables = async () => {

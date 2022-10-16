@@ -1,0 +1,1 @@
+// Make usernames not case sesitive

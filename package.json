@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "cdb": "psql -f ./db/createDB.sql",
-    "seedTest": "DATA=test node db/seed.js"
+    "seedTest": "node db/seed.js"
   },
   "author": "",
   "license": "ISC",
