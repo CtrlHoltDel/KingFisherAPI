@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --watch",
     "cdb": "psql -f ./db/createDB.sql",
-    "seedTest": "node db/seed.js"
+    "seedTest": "node db/manual-seed.js"
   },
   "author": "",
   "license": "ISC",

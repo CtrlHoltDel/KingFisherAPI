@@ -42,25 +42,26 @@ const createTables = async () => {
         note_group VARCHAR NOT NULL REFERENCES note_group(id),
         admin BOOLEAN DEFAULT FALSE,
         validated BOOLEAN DEFAULT FALSE,
-        blocked BOOLEAN DEFAULT FALSE
+        blocked BOOLEAN DEFAULT FALSE,
+        created_time TIMESTAMP DEFAULT NOW()
   );`;
 
   await db.query(users);
-  console.log(`Table Created users`)
+  // console.log(`Table Created users`)
   await db.query(noteGroup);
-  console.log(`Table Created note_group`)
+  // console.log(`Table Created note_group`)
   await db.query(players);
-  console.log(`Table Created players`)
+  // console.log(`Table Created players`)
   await db.query(notes);
-  console.log(`Table Created notes`)
+  // console.log(`Table Created notes`)
   await db.query(noteGroupJunction);
-  console.log(`Table Created note_group_junction`)
+  // console.log(`Table Created note_group_junction`)
 };
 
 const dropTables = async () => {
   for (let i = 0; i < TABLES_NAMES.length; i++) {
     await db.query(`DROP TABLE IF EXISTS ${TABLES_NAMES[i]} CASCADE`);
-    console.log(`Table ${TABLES_NAMES[i]} dropped`);
+    // console.log(`Table ${TABLES_NAMES[i]} dropped`);
   }
 };
 

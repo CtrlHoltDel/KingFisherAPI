@@ -59,6 +59,7 @@ exports.insertGroup = async (username, name) => {
 };
 
 exports.requestGroupJoin = async (groupName, username) => {
+  console.log(groupName);
   try {
     const { rows: group } = await db.query(
       `SELECT name, id FROM note_group WHERE name = $1`,
@@ -92,10 +93,27 @@ exports.requestGroupJoin = async (groupName, username) => {
       [username, group[0].id, generateUUID()]
     );
 
-    return joinedGroup;
+    return { message: "Request submitted", groupName };
   } catch (error) {
     console.log(error);
   }
 };
 
-exports.checkGroupRequests = async (username) => {};
+exports.checkGroupRequests = async (username) => {
+  const { rows } = await db.query(`SELECT
+                                     ng.name group_name, ngj.id group_id, ngj.username user_with_request, ngj.validated 
+                                   FROM
+                                     note_group ng
+                                   JOIN
+                                     note_group_junction ngj ON ng.id = ngj.note_group
+                                   WHERE
+                                     ng.created_by = $1 AND ngj.validated = false;`,
+                                   [username]
+                                 );
+
+  return rows
+};
+
+exports.acceptGroupRequest = async () => {
+  
+}

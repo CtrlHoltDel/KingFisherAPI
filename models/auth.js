@@ -68,7 +68,6 @@ exports.handleRegister = async (username, password) => {
     return addedUser;
 
   } catch (error) {
-    console.log(error)
     return Promise.reject({ type: "PSQL", status: 403, message: "PSQL Error", error });
   }
 

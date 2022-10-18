@@ -6,5 +6,5 @@ exports.handleError = (err, req, res, next) => {
     }
 
 
-    res.status(err.status).send(err.message)
+    res.status(err.status).send({ message: err.message })
 }
