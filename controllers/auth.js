@@ -4,7 +4,7 @@ exports.postLogin = async (req, res, next) => {
     const { username, password } = req.body;
 
     try {
-        const response = await handleLogin(username, password)    
+        const response = await handleLogin(username, password)
         res.status(200).send(response)
     } catch (err) {
         next(err)

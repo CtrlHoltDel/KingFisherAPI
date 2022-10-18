@@ -9,6 +9,7 @@ const insertData = async ({
   note_group,
   note_group_junction,
 }) => {
+
   const usersQuery = format(
     `INSERT INTO users(id, username, password, created_time) VALUES %L`,
     users.map(({ id, username, password, created_time }) => [
@@ -56,23 +57,24 @@ const insertData = async ({
   );
 
   const groupJunctionQuery = format(
-    `INSERT INTO note_group_junction (username, note_group) VALUES %L`,
-    note_group_junction.map(({ username, note_group }) => [
+    `INSERT INTO note_group_junction (id, username, note_group) VALUES %L`,
+    note_group_junction.map(({ id, username, note_group }) => [
+      id,
       username,
       note_group,
     ])
   );
 
   await db.query(usersQuery);
-  console.log("Table DATA inserted users")
+  console.log("Table DATA inserted users");
   await db.query(noteGroupQuery);
-  console.log("Table DATA inserted note group")
+  console.log("Table DATA inserted note group");
   await db.query(playersQuery);
-  console.log("Table DATA inserted players")
+  console.log("Table DATA inserted players");
   await db.query(notesQuery);
-  console.log("Table DATA inserted notes")
+  console.log("Table DATA inserted notes");
   await db.query(groupJunctionQuery);
-  console.log("Table DATA inserted note group junction")
+  console.log("Table DATA inserted note group junction");
 };
 
 module.exports = insertData;

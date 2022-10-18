@@ -1,7 +1,5 @@
 const ENV = process.env.NODE_ENV || "development";
 
-const db = require("./db/connection");
-
 const { validateToken } = require("./middleware/auth");
 
 require("dotenv").config({
@@ -12,6 +10,7 @@ const express = require("express");
 const cors = require("cors");
 const { handleError } = require("./errors/errors");
 const { postLogin, postRegister } = require("./controllers/auth");
+const groupsRouter = require("./routes/groups");
 
 const app = express();
 app.use(express.json());
@@ -22,14 +21,7 @@ app.post("/auth/register", postRegister)
 
 app.use(validateToken);
 
-app.get("/groups", async (req, res, next) => {
-  const { rows } = await db.query(
-    `SELECT ngj.note_group, ngj.username, ng.name FROM "note_group_junction" ngj JOIN "note_group" ng ON ng.id = ngj.note_group WHERE username = $1`,
-    ["ctrlholtdel"]
-  );
-
-  res.send({ rows });
-});
+app.use("/groups", groupsRouter)
 
 app.use(handleError);
 
