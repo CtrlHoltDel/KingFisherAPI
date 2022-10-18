@@ -51,5 +51,5 @@ exports.getGroupRequests = async (req, res, next) => {
 
 // Accepting group request
 exports.postAcceptRequest = async (req, res, next) => {
-    console.log("sdkfgnsd")
+    // console.log("sdkfgnsd")
 }

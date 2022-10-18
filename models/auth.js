@@ -20,8 +20,6 @@ exports.handleLogin = async (username, password) => {
 
     const validPassword = await bcrypt.compare(`${password}`, rows[0].password);
 
-    console.log(validPassword)
-
     if (!validPassword) return Promise.reject(EM.invalidCredentials);
 
     const token = jwt.sign(
@@ -56,7 +54,7 @@ exports.handleRegister = async (username, password) => {
     );
 
     if (!!userSearch.length)
-      return Promise.reject({ status: 400, message: "User already exists" });
+      return Promise.reject({ status: 400, message: "Username taken" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
