@@ -59,11 +59,11 @@ exports.handleRegister = async (username, password) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const { rows: addedUser } = await db.query(
-      `INSERT INTO users (id, username, password) VALUES ($1, $2, $3) RETURNING id, username, created_time`,
+      `INSERT INTO users (id, username, password) VALUES ($1, $2, $3) RETURNING username, created_time`,
       [generateUUID(), username, hashedPassword]
     );
 
-    return addedUser;
+    return addedUser[0];
 
   } catch (error) {
     return Promise.reject({ type: "PSQL", status: 403, message: "PSQL Error", error });

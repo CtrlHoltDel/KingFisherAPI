@@ -12,11 +12,12 @@ afterAll(async () => {
     db.end()
 });
 
-describe.skip("/auth", () => {
+describe("/auth", () => {
     const testUser = { username: "test", password: "test" }
 
     beforeEach(async () => {
-        await request(app).post('/auth/register').send(testUser).expect(201);
+        const { body } = await request(app).post('/auth/register').send(testUser).expect(201);
+        console.log(body.data, "<<")
     });
 
     it('Attempting to register using a non-unique username returns an error', async () => {
@@ -26,7 +27,9 @@ describe.skip("/auth", () => {
 
     it('Logging in with correct credentials returns a valid web token', async () => { 
         const { body } = await request(app).post('/auth/login').send(testUser)
-        expect(body.response.token).not.toBe(null);
+        console.log(body.data)
+
+        // Make a request here to test
     })
 
     it('Logging in with invalid credentials returns an error', async () => {
@@ -35,20 +38,14 @@ describe.skip("/auth", () => {
     });
 })
 
-describe("/groups", () => {
-    describe('/Logged in as user', () => { 
-        let token;
+describe('/groups', () => { 
+    beforeEach(async () => {
+        const { body } = await request(app).post('/auth/login').send({ username: "ctrlholtdel", password: "test" }).expect(200);
+        console.log(body.loginInfo)
+    })
 
-        beforeEach(async () => {
-            const { body } = await request(app).post('/auth/login').send({ username: "ctrlholtdel", password: process.env.TEST_PASSWORD }).expect(200);
-            token = body.response.token
-        });
+    it('should ', () => {
+        
+    });
 
-        it('Test', async () => {
-
-
-        });
-
-     })
-
-})
+ })

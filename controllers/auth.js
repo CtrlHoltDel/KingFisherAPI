@@ -5,7 +5,7 @@ exports.postLogin = async (req, res, next) => {
 
     try {
         const response = await handleLogin(username, password)
-        res.status(200).send({ response })
+        res.status(200).send({ status: "success", data: { ...response }})
     } catch (err) {
         next(err)
     }
@@ -16,7 +16,7 @@ exports.postRegister = async (req, res, next) => {
 
     try {
         const response = await handleRegister(username, password)
-        res.status(201).send({ response })
+        res.status(201).send({ status: "success", data: { ...response }})
     } catch (err) {
         next(err)
     }

@@ -47,21 +47,15 @@ const createTables = async () => {
   );`;
 
   await db.query(users);
-  // console.log(`Table Created users`)
   await db.query(noteGroup);
-  // console.log(`Table Created note_group`)
   await db.query(players);
-  // console.log(`Table Created players`)
   await db.query(notes);
-  // console.log(`Table Created notes`)
   await db.query(noteGroupJunction);
-  // console.log(`Table Created note_group_junction`)
 };
 
 const dropTables = async () => {
   for (let i = 0; i < TABLES_NAMES.length; i++) {
     await db.query(`DROP TABLE IF EXISTS ${TABLES_NAMES[i]} CASCADE`);
-    // console.log(`Table ${TABLES_NAMES[i]} dropped`);
   }
 };
 

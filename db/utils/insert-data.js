@@ -69,15 +69,10 @@ const insertData = async ({
   );
 
   await db.query(usersQuery);
-  // console.log("Table DATA inserted users");
   await db.query(noteGroupQuery);
-  // console.log("Table DATA inserted note group");
   await db.query(playersQuery);
-  // console.log("Table DATA inserted players");
   await db.query(notesQuery);
-  // console.log("Table DATA inserted notes");
   await db.query(groupJunctionQuery);
-  // console.log("Table DATA inserted note group junction");
 };
 
 module.exports = insertData;

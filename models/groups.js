@@ -53,13 +53,11 @@ exports.insertGroup = async (username, name) => {
 
     return { name: rows[0].name, created_time: rows[0].created_time };
   } catch (err) {
-    console.log(err);
     return Promise.reject({ status: 404, message: err });
   }
 };
 
 exports.requestGroupJoin = async (groupName, username) => {
-  console.log(groupName);
   try {
     const { rows: group } = await db.query(
       `SELECT name, id FROM note_group WHERE name = $1`,
@@ -95,7 +93,9 @@ exports.requestGroupJoin = async (groupName, username) => {
 
     return { message: "Request submitted", groupName };
   } catch (error) {
-    console.log(error);
+
+
+    
   }
 };
 
