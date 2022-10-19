@@ -1,4 +1,4 @@
-const { fetchGroups, insertGroup, requestGroupJoin, checkGroupRequests } = require("../models/groups")
+const { fetchGroups, insertGroup, requestGroupJoin, checkGroupRequests, addToGroup } = require("../models/groups")
 
 // Groups the user is part of.
 exports.getGroups = async (req, res, next) => {
@@ -6,7 +6,7 @@ exports.getGroups = async (req, res, next) => {
 
     try {
         const groups = await fetchGroups(username)
-        res.status(200).send(groups);
+        res.status(200).send({ status: "success", data: { groups }});
     } catch (err) {
         next(err)
     }
@@ -20,19 +20,18 @@ exports.postGroup = async (req, res, next) => {
 
     try {
         const addedGroup = await insertGroup(username, name)
-        res.status(201).send(addedGroup)
+        res.status(201).send({ status: "success", data: { ...addedGroup } })
     } catch (err) {
         next(err)
     }
 }
 
-// Requesting to join a group based on name
+// Requesting to join a group
 exports.postJoinGroup = async (req, res, next) => {
     const { query, user } = req
-
     try {
-        const joinRequestApproved = await requestGroupJoin(query.name, user.username)
-        res.status(201).send(joinRequestApproved)
+        const joinRequestApproved = await requestGroupJoin(query.group_id, user.username)
+        res.status(201).send({ status: "success", data: { ...joinRequestApproved }})
     } catch (err) {
         next(err)
     }
@@ -43,7 +42,7 @@ exports.getGroupRequests = async (req, res, next) => {
     const { user } = req;
     try {
         const groupRequests = await checkGroupRequests(user.username)
-        res.status(200).send(groupRequests)
+        res.status(200).send({ status: "success", data: { groupRequests }})
     } catch (err) {
         next(err)
     }
@@ -52,4 +51,12 @@ exports.getGroupRequests = async (req, res, next) => {
 // Accepting group request
 exports.postAcceptRequest = async (req, res, next) => {
     // console.log("sdkfgnsd")
+}
+
+exports.postAcceptToGroup = async (req, res, next) => {
+    try {
+        const response = addToGroup()
+    } catch (error) {
+        
+    }
 }

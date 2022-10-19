@@ -2,16 +2,29 @@
 
 ## Auth
 
-### POST
 /auth/register
-body || { username: "string", password: "string" }
-response.data || { username: 'string', created_time: 'date' }
+#### POST
+body || { username: string, password: string }
+response.data || { username: string, created_time: date }
 
-### POST
 /auth/login
+#### POST
 body || { username: "string", password: "string" }
 response.data || { token: "string", username: "string" }
 
 ## Groups
 
-### GET
+/groups
+### GET //Getting a list of all groups you belong to
+body || null
+response.data || { groups: [{ name: string, note_group: id, username: string, group: id }, {}, {}, ...]}
+
+### POST //Creating a new group
+body || { name: string }
+response.data || { name: string, created_time: date }
+
+
+/groups/join?id=id
+### POST //Requests to join a group
+body || { group_id: string }
+response.data { message: string }

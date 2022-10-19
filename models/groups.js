@@ -4,11 +4,9 @@ const generateUUID = require("../utils/UUID");
 exports.fetchGroups = async (username) => {
   const { rows } = await db.query(
     `SELECT
-        ngj.note_group,
-        ngj.username,
-        ngj.id,
-        ngj.validated,
-        ng.name
+        ng.name,
+        ng.id,
+        ngj.username
     FROM
         "note_group_junction" ngj
         JOIN "note_group" ng ON ng.id = ngj.note_group
@@ -57,18 +55,19 @@ exports.insertGroup = async (username, name) => {
   }
 };
 
-exports.requestGroupJoin = async (groupName, username) => {
+exports.requestGroupJoin = async (groupId, username) => {
   try {
     const { rows: group } = await db.query(
-      `SELECT name, id FROM note_group WHERE name = $1`,
-      [groupName]
+      `SELECT name, id FROM note_group WHERE id = $1`,
+      [groupId]
     );
+
     if (!group.length)
       return Promise.reject({ status: 400, message: "Group doesn't exist" });
 
     const { rows: groupJunctionCheck } = await db.query(
       `SELECT username, blocked, validated, admin, note_group FROM note_group_junction WHERE username = $1 AND note_group = $2`,
-      [username, group[0].id]
+      [username, groupId]
     );
 
     if (groupJunctionCheck.length) {
@@ -86,22 +85,22 @@ exports.requestGroupJoin = async (groupName, username) => {
       });
     }
 
-    const { rows: joinedGroup } = await db.query(
+    await db.query(
       `INSERT INTO note_group_junction (username, note_group, id) VALUES ($1, $2, $3)`,
-      [username, group[0].id, generateUUID()]
+      [username, groupId, generateUUID()]
     );
 
-    return { message: "Request submitted", groupName };
+    return { message: `Request submitted to group: ${groupId}` };
+
   } catch (error) {
 
-
-    
+    return Promise.reject({ status: 404, message: err });
   }
 };
 
 exports.checkGroupRequests = async (username) => {
   const { rows } = await db.query(`SELECT
-                                     ng.name group_name, ngj.id group_id, ngj.username user_with_request, ngj.validated 
+                                     ng.name group_name, ngj.id group_id, ngj.username as user 
                                    FROM
                                      note_group ng
                                    JOIN
@@ -115,5 +114,9 @@ exports.checkGroupRequests = async (username) => {
 };
 
 exports.acceptGroupRequest = async () => {
+  
+}
+
+exports.addToGroup = async () => {
   
 }
