@@ -21,7 +21,7 @@ const createTables = async () => {
   );`;
 
   const noteGroup = `CREATE TABLE note_group (
-        id VARCHAR PRIMARY KEY UNIQUE,
+        id VARCHAR PRIMARY KEY,
         name VARCHAR NOT NULL,
         created_time TIMESTAMP DEFAULT NOW(),
         created_by VARCHAR REFERENCES users(username)
@@ -43,7 +43,8 @@ const createTables = async () => {
         admin BOOLEAN DEFAULT FALSE,
         validated BOOLEAN DEFAULT FALSE,
         blocked BOOLEAN DEFAULT FALSE,
-        created_time TIMESTAMP DEFAULT NOW()
+        created_time TIMESTAMP DEFAULT NOW(), 
+        UNIQUE(note_group, username)
   );`;
 
   await db.query(users);

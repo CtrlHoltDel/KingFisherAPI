@@ -28,3 +28,8 @@ response.data || { name: string, created_time: date }
 ### POST //Requests to join a group
 body || { group_id: string }
 response.data { message: string }
+
+/groups/requests
+### GET //Returns all your group requests
+body || null
+response.data { groupRequests: [ ]}

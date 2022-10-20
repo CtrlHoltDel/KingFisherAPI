@@ -45,6 +45,7 @@ describe('Groups', () => {
     let user1Group1;
     let user1Group2;
 
+
     beforeAll(async () => {
         const { body : user1Login } = await request(app).post('/auth/login').send({ username: "ctrlholtdel", password: "test" }).expect(200);
         user1Token = user1Login.data.token
@@ -119,7 +120,7 @@ describe('Groups', () => {
         expect(after3Requests.data.groupRequests[2].group_name).toBe(user1Group2.name);
     });
 
-    it.only('POST::/groups/adduser?username ', () => {
+    it('POST::/groups/adduser?username ', () => {
         
     });
 
