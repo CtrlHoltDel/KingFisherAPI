@@ -29,6 +29,7 @@ exports.postGroup = async (req, res, next) => {
 // Requesting to join a group
 exports.postJoinGroup = async (req, res, next) => {
     const { query, user } = req
+
     try {
         const joinRequestApproved = await requestGroupJoin(query.group_id, user.username)
         res.status(201).send({ status: "success", data: { ...joinRequestApproved }})
@@ -50,7 +51,7 @@ exports.getGroupRequests = async (req, res, next) => {
 
 // Accepting group request
 exports.postAcceptRequest = async (req, res, next) => {
-    // console.log("sdkfgnsd")
+    
 }
 
 exports.postAcceptToGroup = async (req, res, next) => {

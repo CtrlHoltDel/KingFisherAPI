@@ -11,17 +11,19 @@ const cors = require("cors");
 const { handleError } = require("./errors/errors");
 const { postLogin, postRegister } = require("./controllers/auth");
 const groupsRouter = require("./routes/groups");
+const playersRouter = require("./routes/players");
 
 const app = express();
 app.use(express.json());
 const server = require("http").Server(app);
 
-app.post("/auth/login", postLogin);
 app.post("/auth/register", postRegister)
+app.post("/auth/login", postLogin);
 
 app.use(validateToken);
 
 app.use("/groups", groupsRouter)
+app.use("/players", playersRouter)
 
 app.use(handleError);
 

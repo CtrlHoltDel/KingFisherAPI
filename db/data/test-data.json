@@ -1,0 +1,222 @@
+{
+  "users": [
+    {
+      "id": "f0a2d358-7f73-4e8c-9bfc-08011dd8ca27",
+      "username": "ctrlholtdel",
+      "password": "$2a$10$unDZKMSdzOzvcGSYnRzOzO5hNfZFqPtcGXd4GOv1QVRA.q8/Vcl2W",
+      "created_time": "2022-01-18T10:35:15.903Z"
+    },
+    {
+      "id": "a20921e8-d237-4c93-8256-e64a38cee93b",
+      "username": "testuser",
+      "password": "$2a$10$unDZKMSdzOzvcGSYnRzOzO5hNfZFqPtcGXd4GOv1QVRA.q8/Vcl2W",
+      "created_time": "2022-06-18T10:35:15.903Z"
+    },
+    {
+      "id": "f0f3b884-86de-494e-a378-964bae2c7215",
+      "username": "testuser2",
+      "password": "$2a$10$unDZKMSdzOzvcGSYnRzOzO5hNfZFqPtcGXd4GOv1QVRA.q8/Vcl2W",
+      "created_time": "2022-07-18T10:35:15.903Z"
+    },
+    {
+      "id": "f0f3b884-86de-494e-a378-964bae2c7212",
+      "username": "testuser3",
+      "password": "$2a$10$unDZKMSdzOzvcGSYnRzOzO5hNfZFqPtcGXd4GOv1QVRA.q8/Vcl2W",
+      "created_time": "2022-07-18T10:35:15.903Z"
+    }
+  ],
+  "note_group": [
+    {
+      "id": "97d36461-6076-4014-a78d-4a10aeef91dc",
+      "name": "kingfisher",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "created_by": "ctrlholtdel"
+    },
+    {
+      "id": "174a4245-40ec-4007-b29b-1fc7d87bd905",
+      "name": "swan",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "created_by": "ctrlholtdel"
+    },
+    {
+      "id": "174a4245-40ec-4007-b29b-1fc7d87bd904",
+      "name": "ferret",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "created_by": "testuser"
+    }
+  ],
+  "note_group_junction": [
+    {
+      "id": "1",
+      "username": "ctrlholtdel",
+      "note_group": "97d36461-6076-4014-a78d-4a10aeef91dc",
+      "validated": true,
+      "admin": true,
+      "created_time": "2022-01-18T10:35:15.903Z"
+    },
+    {
+      "id": "2",
+      "username": "ctrlholtdel",
+      "note_group": "174a4245-40ec-4007-b29b-1fc7d87bd905",
+      "validated": true,
+      "admin": true,
+      "created_time": "2022-01-18T10:35:15.903Z"
+    },
+    {
+      "id": "3",
+      "username": "testuser",
+      "note_group": "174a4245-40ec-4007-b29b-1fc7d87bd904",
+      "validated": true,
+      "admin": true,
+      "created_time": "2022-01-18T10:35:15.903Z"
+    },
+    {
+      "id": "4",
+      "username": "testuser",
+      "note_group": "97d36461-6076-4014-a78d-4a10aeef91dc",
+      "validated": false,
+      "admin": false,
+      "created_time": "2022-01-18T10:35:15.903Z"
+    }
+  ],
+  "players": [
+    {
+      "id": "1",
+      "name": "player 1",
+      "type": null,
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "created_by": "ctrlholtdel", 
+      "note_group_id": "97d36461-6076-4014-a78d-4a10aeef91dc"
+    },
+    {
+      "id": "2",
+      "name": "player 2",
+      "type": "REG?",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "created_by": "ctrlholtdel", 
+      "note_group_id": "97d36461-6076-4014-a78d-4a10aeef91dc"
+    },
+    {
+      "id": "3",
+      "name": "player 3",
+      "type": "whale",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "created_by": "ctrlholtdel", 
+      "note_group_id": "97d36461-6076-4014-a78d-4a10aeef91dc"
+    },
+    {
+      "id": "4",
+      "name": "player 4",
+      "type": "whale",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "created_by": "ctrlholtdel", 
+      "note_group_id": "174a4245-40ec-4007-b29b-1fc7d87bd905"
+    },
+    {
+      "id": "5",
+      "name": "player 5",
+      "type": "FISH",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "created_by": "ctrlholtdel", 
+      "note_group_id": "174a4245-40ec-4007-b29b-1fc7d87bd905"
+    },    
+    {
+      "id": "6",
+      "name": "player 1",
+      "type": null,
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "created_by": "ctrlholtdel", 
+      "note_group_id": "174a4245-40ec-4007-b29b-1fc7d87bd905"
+    },
+    {
+      "id": "7",
+      "name": "player 1",
+      "type": "FISH",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "created_by": "testuser", 
+      "note_group_id": "174a4245-40ec-4007-b29b-1fc7d87bd904"
+    },    
+    {
+      "id": "8",
+      "name": "player 2",
+      "type": null,
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "created_by": "testuser", 
+      "note_group_id": "174a4245-40ec-4007-b29b-1fc7d87bd904"
+    }
+  ],
+  "notes": [
+    {
+      "id": "1",
+      "created_by": "ctrlholtdel",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "note": "note-contents",
+      "player_id": "1",
+      "type": "note"
+    },
+    {
+      "id": "2",
+      "created_by": "ctrlholtdel",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "note": "note-contents",
+      "player_id": "1",
+      "type": "note"
+    },
+    {
+      "id": "3",
+      "created_by": "ctrlholtdel",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "note": "note-contents",
+      "player_id": "1",
+      "type": "note"
+    },
+    {
+      "id": "4",
+      "created_by": "ctrlholtdel",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "note": "note-contents",
+      "player_id": "2",
+      "type": "note"
+    },
+    {
+      "id": "5",
+      "created_by": "ctrlholtdel",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "note": "note-contents",
+      "player_id": "2",
+      "type": "note"
+    },
+    {
+      "id": "6",
+      "created_by": "ctrlholtdel",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "note": "note-contents",
+      "player_id": "2",
+      "type": "note"
+    },
+    {
+      "id": "7",
+      "created_by": "ctrlholtdel",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "note": "note-contents",
+      "player_id": "2",
+      "type": "note"
+    },
+    {
+      "id": "8",
+      "created_by": "ctrlholtdel",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "note": "tendency-contents",
+      "player_id": "2",
+      "type": "tendency"
+    },
+    {
+      "id": "9",
+      "created_by": "ctrlholtdel",
+      "created_time": "2022-01-18T10:35:15.903Z",
+      "note": "tendency-contents",
+      "player_id": "1",
+      "type": "tendency"
+    }
+  ]
+}

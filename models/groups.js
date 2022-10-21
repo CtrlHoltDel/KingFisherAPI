@@ -93,7 +93,7 @@ exports.requestGroupJoin = async (groupId, username) => {
     return { message: `Request submitted to group: ${groupId}` };
 
   } catch (error) {
-
+    console.log(error)
     return Promise.reject({ status: 404, message: err });
   }
 };

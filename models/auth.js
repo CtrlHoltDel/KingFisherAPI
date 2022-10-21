@@ -5,6 +5,8 @@ const EM = require("../utils/errorMessages");
 const generateUUID = require("../utils/UUID");
 
 exports.handleLogin = async (username, password) => {
+  username = username.toLowerCase()
+
   try {
     if (!username || !password)
       return Promise.reject({
@@ -13,7 +15,7 @@ exports.handleLogin = async (username, password) => {
     });
 
     const { rows } = await db.query(`SELECT * FROM users WHERE username = $1`, [
-      username.toLowerCase(),
+      username,
     ]);
 
     if (!rows.length) return Promise.reject(EM.invalidCredentials);
@@ -36,12 +38,20 @@ exports.handleLogin = async (username, password) => {
 };
 
 exports.handleRegister = async (username, password) => {
+  username = username.toLowerCase()
+
   try {
+    
     if (!username || !password)
-      return Promise.reject({
-        status: 403,
-        message: "Invalid Register Credentials - No Null Values",
-      });
+    return Promise.reject({
+      status: 403,
+      message: "Invalid Register Credentials - No Null Values",
+    });
+    
+    if(/\s/.test(username)) return Promise.reject({
+      status: 400,
+      message: "Username cannot contain spaces",
+    })
 
     if (username.length < 3)
       return Promise.reject({ status: 403, message: "Username Too Short" });
@@ -50,13 +60,13 @@ exports.handleRegister = async (username, password) => {
 
     const { rows: userSearch } = await db.query(
       `SELECT * FROM users WHERE username = $1`,
-      [username.toLowerCase()]
+      [username]
     );
 
     if (!!userSearch.length)
       return Promise.reject({ status: 400, message: "Username taken" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(`${password}`, 10);
 
     const { rows: addedUser } = await db.query(
       `INSERT INTO users (id, username, password) VALUES ($1, $2, $3) RETURNING username, created_time`,

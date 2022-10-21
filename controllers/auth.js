@@ -2,8 +2,6 @@ const { handleLogin, handleRegister } = require("../models/auth");
 
 exports.postLogin = async (req, res, next) => {
     const { username, password } = req.body;
-    console.log(username, password)
-
     try {
         const response = await handleLogin(username, password)
         res.status(200).send({ status: "success", data: { ...response }})
