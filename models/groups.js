@@ -122,9 +122,14 @@ exports.handleUser = async (currentUsername, action, group_id, username) => {
   await checkGroupOwnership(currentUsername, group_id);
 
   if(action === 'add'){
-    // add username to group id junction
-    await db.query(`INSERT INTO note_group_junction (id, username, note_group, validated) VALUES ($1, $2, $3, $4)`, [generateUUID(), username, group_id, true]);
-    return
+    const { rows: alreadyExistsCheck } = await db.query(`SELECT username, note_group FROM note_group_junction WHERE note_group = $1 AND username = $2`, [group_id, username])
+
+    if(!alreadyExistsCheck.length){
+      await db.query(`INSERT INTO note_group_junction (id, username, note_group, validated) VALUES ($1, $2, $3, $4)`, [generateUUID(), username, group_id, true]);
+      return "added"
+    }
+
+    await db.query(`UPDATE note_group_junction SET validated = $1 WHERE note_group = $2 AND username = $3`, [true, group_id, username])
   }
 
   

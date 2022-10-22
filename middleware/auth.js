@@ -14,7 +14,7 @@ exports.validateToken = (req, res, next) => {
         req.user = user
         next();
     } catch (error) {
-        next(EM.unauthorised)
+        next({ status: 403, message: "Restricted" })
     }
     
 }

@@ -55,6 +55,16 @@ describe("Auth", () => {
         expect(body.message).toBe('invalid credentials');
     });
 
+    it('POST:: No token or invalid token returns an error', async () => {
+        const { body: noTokenRequest } = await request(app).get('/players').expect(403)
+        expect(noTokenRequest.status).toBe(ERROR_STATUS);
+        expect(noTokenRequest.message).toBe('Restricted');
+
+        const { body: invalidTokenRequest } = await request(app).get('/players').expect(403).set(AUTHORIZATION_HEADER, 'Bearer InvalidKey');
+        expect(invalidTokenRequest.status).toBe(ERROR_STATUS);
+        expect(invalidTokenRequest.message).toBe('Restricted');
+    });
+
 })
 
 describe('Groups', () => { 
@@ -83,7 +93,6 @@ describe('Groups', () => {
     it('GET::/groups: Returns a list of groups', async () => {
         const { body } = await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${user1.token}`)
         expect(body.data.groups.length).toBe(2);
-
     });
 
     it('POST::/groups: Creates a new group', async () => {
@@ -99,7 +108,7 @@ describe('Groups', () => {
         expect(newGroupList.data.groups.length).toBe(beforeAddingGroupLength + 1);
     });
 
-    describe.only('GET::/groups/join?id=id:', () => {        
+    describe('GET::/groups/join?id=id:', () => {        
         it('Sends a request to join a group. Requesting again returns an error', async () => {
             const { body: groupRequest } = await request(app).post(`/groups/join?group_id=${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${user3.token}`).expect(201)
             expect(groupRequest.data.message).toBe(`Request submitted to group: ${user1Group1.id}`);
@@ -168,54 +177,67 @@ describe('Groups', () => {
             expect(validGroupNoUser.status).toBe(ERROR_STATUS);
             expect(validGroupNoUser.message).toBe("No Null Values");
         });
+
+        it('Validates the user if there is a pre-existing request', async () => {
+            // TODO Test me
+        });
     });
 
 })
 
 
 
-describe('players', () => { 
+describe.only('players', () => { 
     let user1;
     let user1Group1;
-
 
     beforeAll(async () => {
         const { body : user1Login } = await request(app).post('/auth/login').send({ username: "ctrlholtdel", password: "test" }).expect(200);
         user1 = user1Login.data
 
         const { body: user1Groups } = await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${user1.token}`)
-
         user1Group1 = user1Groups.data.groups[0]
     })
 
-    it('GET::/players?groupid: Returns a list of all players at that specific group', async () => {
-        const { body: playersListGroup1 } = await request(app).get(`/players/${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${user1.token}`)
-        
-        expect(playersListGroup1.status).toBe(SUCCESS_STATUS);
-        expect(playersListGroup1.data.players.length).toBe(3);
+    
+    describe('GET::/players/:groupId', () => {
+        it('GET::/players?groupid: Returns a list of all players at that specific group', async () => {
+            const { body: playersListGroup1 } = await request(app).get(`/players/${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${user1.token}`)
+            
+            expect(playersListGroup1.status).toBe(SUCCESS_STATUS);
+            expect(playersListGroup1.data.players.length).toBe(3);
+        });
+    
+        it('E2E::/players?groupid=: Returns an error if the user isn\'t a part of the group or validated', async () => {
+            // Setting up a new user
+            const newUser = await newUserSetup("newUser")
+    
+            const { body: playersListGroup1Unvalidated } = await request(app).get(`/players/${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${newUser.token}`).expect(400)
+            expect(playersListGroup1Unvalidated.status).toBe(ERROR_STATUS);
+            expect(playersListGroup1Unvalidated.message).toBe('Cannot Process Request');
+    
+            // Trying to access after requesting to join the group but yet to be validated.
+            await request(app).post(`/groups/join?group_id=${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${newUser.token}`).expect(201)
+            const { body: playersListGroup1UnvalidatedAfterRequest } = await request(app).get(`/players/${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${newUser.token}`).expect(400)
+    
+            expect(playersListGroup1UnvalidatedAfterRequest.status).toBe(ERROR_STATUS);
+            expect(playersListGroup1UnvalidatedAfterRequest.message).toBe('Pending Request');    
+
+            // Adding user to group
+            const { body: addedResponse } = await request(app).post(`/groups/handle-request/${user1Group1.id}?username=${newUser.username}`).send({ action: "add" }).set(AUTHORIZATION_HEADER, `Bearer ${user1.token}`).expect(201)
+            expect(addedResponse.status).toBe(SUCCESS_STATUS);
+            expect(addedResponse.data.message).toBe(`${newUser.username} added`);
+
+            // After the user has been validated
+            const { body: playersListGroup1AfterValidation } = await request(app).get(`/players/${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${newUser.token}`).expect(200)
+    
+            expect(playersListGroup1AfterValidation.status).toBe(SUCCESS_STATUS);
+            expect(playersListGroup1AfterValidation.data.players).toHaveLength(3);    
+        })
+
+        it('should ', () => {
+            
+        });
     });
-
-    it('GET::/players?groupid=: Returns an error if the user isn\'t a part of the group or validated', async () => {
-        // Setting up a new user
-        const newUser = await newUserSetup("newUser")
-
-        // Trying to access by manipulating endpoint
-        const { body: playersListGroup1Unvalidated } = await request(app).get(`/players/${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${newUser.token}`).expect(400)
-
-        expect(playersListGroup1Unvalidated.status).toBe(ERROR_STATUS);
-        expect(playersListGroup1Unvalidated.message).toBe('Cannot Process Request');
-
-        // Trying to access after requesting to join the group but yet to be validated.
-        await request(app).post(`/groups/join?group_id=${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${newUser.token}`).expect(201)
-        const { body: playersListGroup1UnvalidatedAfterRequest } = await request(app).get(`/players/${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${newUser.token}`).expect(400)
-
-        expect(playersListGroup1UnvalidatedAfterRequest.status).toBe(ERROR_STATUS);
-        expect(playersListGroup1UnvalidatedAfterRequest.message).toBe('Pending Request');    
-
-
-        // TODO: Once group validation is completed, another test here to make sure they can access players after being validated.
-        // TODO: Once blocking has been implimented, also check blocking here.
-
-    })
 
 })
