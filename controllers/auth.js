@@ -12,7 +12,6 @@ exports.postLogin = async (req, res, next) => {
 
 exports.postRegister = async (req, res, next) => {
     const { username, password } = req.body;
-
     try {
         const response = await handleRegister(username, password)
         res.status(201).send({ status: "success", data: { ...response }})

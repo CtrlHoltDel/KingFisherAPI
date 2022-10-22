@@ -5,7 +5,8 @@ const EM = require("../utils/errorMessages");
 const generateUUID = require("../utils/UUID");
 
 exports.handleLogin = async (username, password) => {
-  username = username.toLowerCase()
+    username = username.toLowerCase()
+
     if (!username || !password)
       return Promise.reject({
         status: 401,

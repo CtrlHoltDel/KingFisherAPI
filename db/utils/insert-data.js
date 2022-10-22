@@ -1,6 +1,5 @@
 const db = require("../connection");
 const format = require("pg-format");
-const bcrypt = require("bcryptjs");
 
 const insertData = async ({
   users,

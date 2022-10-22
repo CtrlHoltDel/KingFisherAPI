@@ -17,5 +17,6 @@ exports.handlePSQLerror = (err, req, res, next) => {
 }
 
 exports.uncaughtError = (err, req, res, next) => {
+    console.log(`<<UNCAUGHT ERROR: ${err}>>`)
     res.status(500).send({ status: "error", message: 'Server Error', error: err })
 }

@@ -11,7 +11,7 @@ const createTables = async () => {
   )`;
 
   const players = `CREATE TABLE players (
-        id SERIAL PRIMARY KEY,
+        id VARCHAR PRIMARY KEY,
         name VARCHAR(255),
         type VARCHAR,
         created_time TIMESTAMP DEFAULT NOW(),
@@ -32,7 +32,7 @@ const createTables = async () => {
         created_by VARCHAR(255) REFERENCES users(username),
         created_time TIMESTAMP DEFAULT NOW(),
         note VARCHAR,
-        player_id INTEGER REFERENCES players(id), 
+        player_id VARCHAR REFERENCES players(id), 
         type VARCHAR
   );`;
 

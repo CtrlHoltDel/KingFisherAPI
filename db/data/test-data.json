@@ -1,25 +1,25 @@
 {
   "users": [
     {
-      "id": "f0a2d358-7f73-4e8c-9bfc-08011dd8ca27",
+      "id": "1",
       "username": "ctrlholtdel",
       "password": "$2a$10$unDZKMSdzOzvcGSYnRzOzO5hNfZFqPtcGXd4GOv1QVRA.q8/Vcl2W",
       "created_time": "2022-01-18T10:35:15.903Z"
     },
     {
-      "id": "a20921e8-d237-4c93-8256-e64a38cee93b",
-      "username": "testuser",
+      "id": "2",
+      "username": "testuser1",
       "password": "$2a$10$unDZKMSdzOzvcGSYnRzOzO5hNfZFqPtcGXd4GOv1QVRA.q8/Vcl2W",
       "created_time": "2022-06-18T10:35:15.903Z"
     },
     {
-      "id": "f0f3b884-86de-494e-a378-964bae2c7215",
+      "id": "3",
       "username": "testuser2",
       "password": "$2a$10$unDZKMSdzOzvcGSYnRzOzO5hNfZFqPtcGXd4GOv1QVRA.q8/Vcl2W",
       "created_time": "2022-07-18T10:35:15.903Z"
     },
     {
-      "id": "f0f3b884-86de-494e-a378-964bae2c7212",
+      "id": "4",
       "username": "testuser3",
       "password": "$2a$10$unDZKMSdzOzvcGSYnRzOzO5hNfZFqPtcGXd4GOv1QVRA.q8/Vcl2W",
       "created_time": "2022-07-18T10:35:15.903Z"
@@ -27,29 +27,29 @@
   ],
   "note_group": [
     {
-      "id": "97d36461-6076-4014-a78d-4a10aeef91dc",
+      "id": "1",
       "name": "kingfisher",
       "created_time": "2022-01-18T10:35:15.903Z",
       "created_by": "ctrlholtdel"
     },
     {
-      "id": "174a4245-40ec-4007-b29b-1fc7d87bd905",
+      "id": "2",
       "name": "swan",
       "created_time": "2022-01-18T10:35:15.903Z",
       "created_by": "ctrlholtdel"
     },
     {
-      "id": "174a4245-40ec-4007-b29b-1fc7d87bd904",
+      "id": "3",
       "name": "ferret",
       "created_time": "2022-01-18T10:35:15.903Z",
-      "created_by": "testuser"
+      "created_by": "testuser1"
     }
   ],
   "note_group_junction": [
     {
       "id": "1",
       "username": "ctrlholtdel",
-      "note_group": "97d36461-6076-4014-a78d-4a10aeef91dc",
+      "note_group": "1",
       "validated": true,
       "admin": true,
       "created_time": "2022-01-18T10:35:15.903Z"
@@ -57,24 +57,32 @@
     {
       "id": "2",
       "username": "ctrlholtdel",
-      "note_group": "174a4245-40ec-4007-b29b-1fc7d87bd905",
+      "note_group": "2",
       "validated": true,
       "admin": true,
       "created_time": "2022-01-18T10:35:15.903Z"
     },
     {
       "id": "3",
-      "username": "testuser",
-      "note_group": "174a4245-40ec-4007-b29b-1fc7d87bd904",
+      "username": "testuser1",
+      "note_group": "1",
+      "validated": false,
+      "admin": false,
+      "created_time": "2022-01-18T10:35:15.903Z"
+    },
+    {
+      "id": "5",
+      "username": "testuser1",
+      "note_group": "3",
       "validated": true,
       "admin": true,
       "created_time": "2022-01-18T10:35:15.903Z"
     },
     {
-      "id": "4",
-      "username": "testuser",
-      "note_group": "97d36461-6076-4014-a78d-4a10aeef91dc",
-      "validated": false,
+      "id": "6",
+      "username": "testuser2",
+      "note_group": "1",
+      "validated": true,
       "admin": false,
       "created_time": "2022-01-18T10:35:15.903Z"
     }
@@ -86,7 +94,7 @@
       "type": null,
       "created_time": "2022-01-18T10:35:15.903Z",
       "created_by": "ctrlholtdel", 
-      "note_group_id": "97d36461-6076-4014-a78d-4a10aeef91dc"
+      "note_group_id": "1"
     },
     {
       "id": "2",
@@ -94,7 +102,7 @@
       "type": "REG?",
       "created_time": "2022-01-18T10:35:15.903Z",
       "created_by": "ctrlholtdel", 
-      "note_group_id": "97d36461-6076-4014-a78d-4a10aeef91dc"
+      "note_group_id": "1"
     },
     {
       "id": "3",
@@ -102,7 +110,7 @@
       "type": "whale",
       "created_time": "2022-01-18T10:35:15.903Z",
       "created_by": "ctrlholtdel", 
-      "note_group_id": "97d36461-6076-4014-a78d-4a10aeef91dc"
+      "note_group_id": "1"
     },
     {
       "id": "4",
@@ -110,7 +118,7 @@
       "type": "whale",
       "created_time": "2022-01-18T10:35:15.903Z",
       "created_by": "ctrlholtdel", 
-      "note_group_id": "174a4245-40ec-4007-b29b-1fc7d87bd905"
+      "note_group_id": "2"
     },
     {
       "id": "5",
@@ -118,7 +126,7 @@
       "type": "FISH",
       "created_time": "2022-01-18T10:35:15.903Z",
       "created_by": "ctrlholtdel", 
-      "note_group_id": "174a4245-40ec-4007-b29b-1fc7d87bd905"
+      "note_group_id": "2"
     },    
     {
       "id": "6",
@@ -126,23 +134,23 @@
       "type": null,
       "created_time": "2022-01-18T10:35:15.903Z",
       "created_by": "ctrlholtdel", 
-      "note_group_id": "174a4245-40ec-4007-b29b-1fc7d87bd905"
+      "note_group_id": "2"
     },
     {
       "id": "7",
       "name": "player 1",
       "type": "FISH",
       "created_time": "2022-01-18T10:35:15.903Z",
-      "created_by": "testuser", 
-      "note_group_id": "174a4245-40ec-4007-b29b-1fc7d87bd904"
+      "created_by": "testuser1", 
+      "note_group_id": "3"
     },    
     {
       "id": "8",
       "name": "player 2",
       "type": null,
       "created_time": "2022-01-18T10:35:15.903Z",
-      "created_by": "testuser", 
-      "note_group_id": "174a4245-40ec-4007-b29b-1fc7d87bd904"
+      "created_by": "testuser1", 
+      "note_group_id": "3"
     }
   ],
   "notes": [

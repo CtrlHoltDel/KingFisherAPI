@@ -6,3 +6,7 @@ exports.checkGroupOwnership = async (username, groupId) => {
 
     return Promise.reject({ status: 400, message: "Error handling request" })
 }
+
+exports.checkGroupStatus = async (username, noteGroupId) => {
+    const { rows } = await db.query(`SELECT username, validated, admin FROM note_group_junction WHERE username = $1 AND note_group = $2`, [username, noteGroupId])
+}
