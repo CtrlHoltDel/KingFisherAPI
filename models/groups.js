@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { checkGroupOwnership } = require("../utils/dbUtils");
 const generateUUID = require("../utils/UUID");
 
 exports.fetchGroups = async (username) => {
@@ -63,7 +64,7 @@ exports.requestGroupJoin = async (groupId, username) => {
     );
 
     if (!group.length)
-      return Promise.reject({ status: 400, message: "Group doesn't exist" });
+      return Promise.reject({ status: 400, message: "Cannot Process Request" });
 
     const { rows: groupJunctionCheck } = await db.query(
       `SELECT username, blocked, validated, admin, note_group FROM note_group_junction WHERE username = $1 AND note_group = $2`,
@@ -72,7 +73,7 @@ exports.requestGroupJoin = async (groupId, username) => {
 
     if (groupJunctionCheck.length) {
       if (groupJunctionCheck[0].blocked)
-        return Promise.reject({ status: 404, message: "Group doesn't exist" });
+        return Promise.reject({ status: 404, message: "Cannot Process Request" });
       if (groupJunctionCheck[0].validated)
         return Promise.reject({
           status: 200,
@@ -80,7 +81,7 @@ exports.requestGroupJoin = async (groupId, username) => {
         });
 
       return Promise.reject({
-        status: 200,
+        status: 422,
         message: "You have a pending request",
       });
     }
@@ -93,7 +94,6 @@ exports.requestGroupJoin = async (groupId, username) => {
     return { message: `Request submitted to group: ${groupId}` };
 
   } catch (error) {
-    console.log(error)
     return Promise.reject({ status: 404, message: err });
   }
 };
@@ -117,6 +117,15 @@ exports.acceptGroupRequest = async () => {
   
 }
 
-exports.addToGroup = async () => {
+exports.handleUser = async (currentUsername, action, group_id, username) => {
+
+  await checkGroupOwnership(currentUsername, group_id);
+
+  if(action === 'add'){
+    // add username to group id junction
+    await db.query(`INSERT INTO note_group_junction (id, username, note_group, validated) VALUES ($1, $2, $3, $4)`, [generateUUID(), username, group_id, true]);
+    return
+  }
+
   
 }

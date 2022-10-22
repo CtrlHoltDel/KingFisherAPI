@@ -38,7 +38,7 @@ const createTables = async () => {
 
   const noteGroupJunction = `CREATE TABLE note_group_junction (
         id VARCHAR PRIMARY KEY,
-        username VARCHAR REFERENCES users(username),
+        username VARCHAR REFERENCES users(username) NOT NULL,
         note_group VARCHAR NOT NULL REFERENCES note_group(id),
         admin BOOLEAN DEFAULT FALSE,
         validated BOOLEAN DEFAULT FALSE,

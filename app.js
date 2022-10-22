@@ -8,7 +8,7 @@ require("dotenv").config({
 
 const express = require("express");
 const cors = require("cors");
-const { handleError } = require("./errors/errors");
+const { handlePSQLerror, handleCustomError } = require("./errors/errors");
 const { postLogin, postRegister } = require("./controllers/auth");
 const groupsRouter = require("./routes/groups");
 const playersRouter = require("./routes/players");
@@ -25,6 +25,7 @@ app.use(validateToken);
 app.use("/groups", groupsRouter)
 app.use("/players", playersRouter)
 
-app.use(handleError);
+app.use(handleCustomError);
+app.use(handlePSQLerror);
 
 module.exports = server;
