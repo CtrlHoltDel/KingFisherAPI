@@ -280,7 +280,7 @@ describe('players', () => {
         })
     });
 
-    describe('POST::/players/:groupId/:playerName', () => {
+    describe.only('POST::/players/:groupId/:playerName', () => {
         const newPlayerName = 'new_player'
 
         it('Admin can add a new player to the group', async () => {
@@ -297,12 +297,14 @@ describe('players', () => {
             expect(afterPlayersListGroup.data.players).toHaveLength(4);
         })
 
-        it.skip('Validated Users can add a new player', async () => {
-            // get a validated user
+        it('Validated Users can add a new player', async () => {
             const { body: addedByTestUser } = await request(app).post(`/players/${user1Group1.id}/${newPlayerName}`).set(AUTHORIZATION_HEADER, `Bearer ${testuser2.token}`).expect(201)
-            expect(addedByTestUser).toBe();
-            console.log(addedByTestUser)
+            expect(addedByTestUser.data.addedPlayer.name).toBe(newPlayerName);
+        });
 
+        it('Unvalidated users cannot add a new player', async () => {
+            const { body: unvalidatedUserPlayerAdd } = await request(app).post(`/players/${user1Group1.id}/${newPlayerName}`).set(AUTHORIZATION_HEADER, `Bearer ${testuser2.token}`).expect(400)
+            console.log(unvalidatedUserPlayerAdd)
         });
 
     //    it('Returns an error if trying to add a duplicate player', () => {
