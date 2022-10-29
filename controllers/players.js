@@ -3,9 +3,10 @@ const { fetchPlayers, addPlayer, fetchPlayer } = require("../models/players")
 exports.getPlayers = async (req, res, next) => {
     const { group_id } = req.params
     const { username } = req.user
+    const { limit, search } = req.query
 
     try {
-        const players = await fetchPlayers(group_id, username)
+        const players = await fetchPlayers(group_id, username, limit, search)
         res.send({ status: "success", data: { players }})
     } catch (error) {
         next(error)
@@ -25,11 +26,12 @@ exports.getPlayer = async (req, res, next) => {
 }
 
 exports.postAddPlayer = async(req, res, next) => {
-    const { group_id, player_name } = req.params
+    const { group_id } = req.params
     const { username } = req.user
+    const { playerName } = req.body 
     
     try {
-        const addedPlayer = await addPlayer(username, group_id, player_name)
+        const addedPlayer = await addPlayer(username, group_id, playerName)
         res.status(201).send({ status: "success", data: { addedPlayer: addedPlayer[0] } })
     } catch (error) {
         next(error)

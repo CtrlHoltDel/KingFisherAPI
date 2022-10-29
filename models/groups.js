@@ -17,10 +17,12 @@ exports.fetchGroups = async (username) => {
         JOIN "note_group" ng ON ng.id = ngj.note_group
     WHERE
         ngj.username = $1
+    AND
+        ngj.blocked = $2
       `,
-    [username]
+    [username, false]
   );
-
+  
   return rows;
 };
 
@@ -119,15 +121,13 @@ exports.checkGroupRequests = async (username) => {
   return rows
 };
 
-exports.acceptGroupRequest = async () => {
-  
-}
-
 exports.handleUserRequest = async (currentUsername, action, group_id, username) => {
 
   await checkGroupStatus(currentUsername, group_id);
 
   if(!username) return Promise.reject({ status: 400, message: "Cannot Process Request" })
+
+  username = username.toLowerCase()
 
   if(action.toLowerCase() === 'add'){
     const { rows: alreadyExistsCheck } = await db.query(`SELECT username, note_group, validated, admin FROM note_group_junction WHERE note_group = $1 AND username = $2`, [group_id, username])

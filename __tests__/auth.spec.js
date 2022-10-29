@@ -8,6 +8,9 @@ const ERROR_STATUS = 'error'
 const SUCCESS_STATUS = 'success'
 const AUTHORIZATION_HEADER = 'Authorization'
 
+
+// TODO show blocked users
+
 beforeEach(async () => { 
     await seedTest();
 });
@@ -23,8 +26,8 @@ const newUserSetup = async (username) => {
     return newUserResponse.data
 }
 
-const getPlayersList = async (groupId, token, expectedResponseCode) => await request(app).get(`/players/${groupId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
-const addPlayer = async (groupId, token, newPlayerName, expectedResponseCode) => await request(app).post(`/players/${groupId}/${newPlayerName}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
+const getPlayersList = async (groupId, token, expectedResponseCode, limit, search) => await request(app).get(`/players/${groupId}?limit=${limit || ""}&search=${search || ""}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
+const addPlayer = async (groupId, token, newPlayerName, expectedResponseCode) => await request(app).post(`/players/${groupId}`).send({ playerName: newPlayerName }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
 const getPlayer = async (groupId, token, playerId, expectedResponseCode) => await request(app).get(`/players/${groupId}/${playerId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
 const getNotes = async (playerId, token, expectedResponseCode) => await request(app).get(`/notes/${playerId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
 const addNote = async (playerId, token, noteBody, expectedResponseCode) => await request(app).post(`/notes/${playerId}`).send(noteBody).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
@@ -289,6 +292,39 @@ describe('Players', () => {
             expect(playersListGroup1AfterValidation.status).toBe(SUCCESS_STATUS);
             expect(playersListGroup1AfterValidation.data.players).toHaveLength(3);    
         })
+
+        describe('Works with pagination and searching', () => {           
+            it('Works with pagniation', async () => {
+                for (let index = 0; index < 10; index++) {
+                    await addPlayer(user1Group1.id, ctrlholtdel.token, `New Test Player - ${index}`)
+                }
+                const { body: playersListPaginatedDefault } = await getPlayersList(user1Group1.id, ctrlholtdel.token, null)
+                expect(playersListPaginatedDefault.data.players).toHaveLength(10);
+
+                const { body: playersListPaginatedSpecific } = await getPlayersList(user1Group1.id, ctrlholtdel.token, null, 3)
+                expect(playersListPaginatedSpecific.data.players).toHaveLength(3);
+            });
+
+            it('Works with search and exact match', async () => {
+                for (let index = 0; index < 5; index++) await addPlayer(user1Group1.id, ctrlholtdel.token, `search-me - ${index}`)
+                await addPlayer(user1Group1.id, ctrlholtdel.token, `r`)
+
+                const { body: playersListPaginatedDefault } = await getPlayersList(user1Group1.id, ctrlholtdel.token, null, null, 'search-me')
+                expect(playersListPaginatedDefault.data.players).toHaveLength(5);
+
+                const { body: playersListWithExactMatch } = await getPlayersList(user1Group1.id, ctrlholtdel.token, null, null, 'r')
+                expect(playersListWithExactMatch.data.players).toHaveLength(9);
+                expect(playersListWithExactMatch.data.players[0].name).toBe('r');
+                expect(playersListWithExactMatch.data.players[0].exactMatch).toBeTruthy()
+            })
+
+            it('Returns an error if limit is not a number', async () => {
+                const { body: invalidLimit } = await getPlayersList(user1Group1.id, ctrlholtdel.token, 400, "invalid-limit")
+                expect(invalidLimit.status).toBe(ERROR_STATUS);
+                expect(invalidLimit.message).toBe('Cannot Process Request');
+            })
+        })
+
     });
 
     describe('POST::/players/:groupId/:player_name', () => {
@@ -336,6 +372,16 @@ describe('Players', () => {
             const { body: invalidGroupName } = await addPlayer("invalid-group-id", ctrlholtdel.token, newPlayerName, 400)
             expect(invalidGroupName.status).toBe(ERROR_STATUS);
             expect(invalidGroupName.message).toBe("Error Handling Request");
+       });
+
+       it('Cant add an empty value as a player name', async () => {
+            const { body: undefinedPlayerName } = await addPlayer(user1Group1.id, ctrlholtdel.token, undefined, 400)
+            expect(undefinedPlayerName.status).toBe(ERROR_STATUS);
+            expect(undefinedPlayerName.message).toBe("Name cannot be a null value");
+
+            const { body: emptyStringPlayerName } = await addPlayer(user1Group1.id, ctrlholtdel.token, "", 400)
+            expect(emptyStringPlayerName.status).toBe(ERROR_STATUS);
+            expect(emptyStringPlayerName.message).toBe("Name cannot be a null value");
        });
     });
 
@@ -416,7 +462,6 @@ describe('Notes', () => {
 
 
             const { body: updatedNotes } = await getNotes(player1.id, ctrlholtdel.token, 200)
-            console.log(updatedNotes.data.notes)
 
             expect(updatedNotes.data.notes).toHaveLength(5);
             expect(updatedNotes.data.notes[updatedNotes.data.notes.length - 1].note).toBe(newNote.note);
