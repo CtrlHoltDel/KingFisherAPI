@@ -1,4 +1,4 @@
-const { fetchGroups, insertGroup, requestGroupJoin, checkGroupRequests, handleUser } = require("../models/groups");
+const { fetchGroups, insertGroup, requestGroupJoin, checkGroupRequests, handleUserRequest } = require("../models/groups");
 
 // Groups the user is part of.
 exports.getGroups = async (req, res, next) => {
@@ -49,14 +49,14 @@ exports.getGroupRequests = async (req, res, next) => {
     }
 }
 
-exports.postHandleUser = async (req, res, next) => {
+exports.postHandleUserRequest = async (req, res, next) => {
     const { action } = req.body
     const { username: currentUsername } = req.user
     const { group_id } = req.params
     const { username } = req.query
     try {
-        const response = await handleUser(currentUsername, action, group_id, username)
-        res.status(201).send({ status: "success",  data: { message: `${username} added` }})
+        const message = await handleUserRequest(currentUsername, action, group_id, username)
+        res.status(201).send({ status: "success",  data: { message }})
     } catch (err) {
         next(err)
     }

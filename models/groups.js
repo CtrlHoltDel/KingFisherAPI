@@ -1,20 +1,24 @@
 const db = require("../db/connection");
-const { checkGroupOwnership } = require("../utils/dbUtils");
+const { checkGroupOwnership, checkGroupStatus } = require("../utils/dbUtils");
 const generateUUID = require("../utils/UUID");
 
 exports.fetchGroups = async (username) => {
+
+  // Update to return all groups you're a part of and pending requests
   const { rows } = await db.query(
     `SELECT
         ng.name,
         ng.id,
-        ngj.username
+        ng.created_by,
+        ngj.validated,
+        ng.created_time
     FROM
         "note_group_junction" ngj
         JOIN "note_group" ng ON ng.id = ngj.note_group
     WHERE
         ngj.username = $1
-        AND ngj.validated = $2`,
-    [username, true]
+      `,
+    [username]
   );
 
   return rows;
@@ -26,6 +30,8 @@ exports.insertGroup = async (username, name) => {
       status: 401,
       message: "Group name must be longer than 3 characters",
     });
+
+    name = name.toLowerCase();
 
   try {
     // Checking if a group by that name already exists.
@@ -117,20 +123,25 @@ exports.acceptGroupRequest = async () => {
   
 }
 
-exports.handleUser = async (currentUsername, action, group_id, username) => {
+exports.handleUserRequest = async (currentUsername, action, group_id, username) => {
 
-  await checkGroupOwnership(currentUsername, group_id);
+  await checkGroupStatus(currentUsername, group_id);
 
-  if(action === 'add'){
-    const { rows: alreadyExistsCheck } = await db.query(`SELECT username, note_group FROM note_group_junction WHERE note_group = $1 AND username = $2`, [group_id, username])
+  if(!username) return Promise.reject({ status: 400, message: "Cannot Process Request" })
 
-    if(!alreadyExistsCheck.length){
-      await db.query(`INSERT INTO note_group_junction (id, username, note_group, validated) VALUES ($1, $2, $3, $4)`, [generateUUID(), username, group_id, true]);
-      return "added"
-    }
+  if(action.toLowerCase() === 'add'){
+    const { rows: alreadyExistsCheck } = await db.query(`SELECT username, note_group, validated, admin FROM note_group_junction WHERE note_group = $1 AND username = $2`, [group_id, username])
 
-    await db.query(`UPDATE note_group_junction SET validated = $1 WHERE note_group = $2 AND username = $3`, [true, group_id, username])
-  }
+    if(alreadyExistsCheck.length){
+      if(alreadyExistsCheck[0]?.validated || alreadyExistsCheck[0]?.admin) return `${username} already in group`
+      await db.query(`UPDATE note_group_junction SET validated = $1 WHERE note_group = $2 AND username = $3 RETURNING note_group, username`, [true, group_id, username])
+      return `${username} added`
+    }    
+    
+    await db.query(`INSERT INTO note_group_junction (id, username, note_group, validated) VALUES ($1, $2, $3, $4)`, [generateUUID(), username, group_id, true]);
+    return `${username} added`
+  } 
 
+  return Promise.reject({ status: 400, message: "Cannot Process Request" })
   
 }

@@ -5,13 +5,13 @@ const EM = require("../utils/errorMessages");
 const generateUUID = require("../utils/UUID");
 
 exports.handleLogin = async (username, password) => {
-    username = username.toLowerCase()
+  if (!username || !password)
+  return Promise.reject({
+    status: 401,
+    message: "Invalid Login Credentials",
+  });
 
-    if (!username || !password)
-      return Promise.reject({
-        status: 401,
-        message: "Invalid Login Credentials",
-      });
+  username = username.toLowerCase()
 
     const { rows } = await db.query(`SELECT * FROM users WHERE username = $1`, [
       username,
@@ -32,14 +32,15 @@ exports.handleLogin = async (username, password) => {
 };
 
 exports.handleRegister = async (username, password) => {
-  username = username.toLowerCase()
-
+  
   if (!username || !password)
   return Promise.reject({
     status: 403,
     message: "Invalid Register Credentials - No Null Values",
   });
   
+  username = username.toLowerCase()
+
   if(/\s/.test(username)) return Promise.reject({
     status: 400,
     message: "Username cannot contain spaces",
