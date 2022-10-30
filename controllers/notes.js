@@ -5,8 +5,8 @@ exports.getNotes = async (req, res, next) => {
     const { player_id } = req.params
 
     try {
-        const notes = await fetchNotes(username, player_id)
-        res.send({ status: "success", data: { notes }})
+        const { notes, player } = await fetchNotes(username, player_id)
+        res.send({ status: "success", data: { notes, player }})
     } catch (error) {
         next(error)
     }

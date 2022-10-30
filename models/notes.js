@@ -7,7 +7,8 @@ exports.fetchNotes = async (username, player_id) => {
     await checkGroupValidity(username, player_id);
 
     const { rows: notes } = await db.query(`SELECT note, created_time, created_by, type FROM notes WHERE player_id = $1`, [player_id]);
-    return notes;
+    const { rows: player } = await db.query(`SELECT * FROM players WHERE id = $1`, [player_id])
+    return { notes, player: player[0] };
 }
 
 exports.postNote = async(username, player_id, note, type) => {

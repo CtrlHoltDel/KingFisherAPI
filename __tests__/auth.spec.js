@@ -7,6 +7,7 @@ const seedTest = require("../db/test-seed");
 const ERROR_STATUS = 'error'
 const SUCCESS_STATUS = 'success'
 const AUTHORIZATION_HEADER = 'Authorization'
+const CANNOT_PROCESS_REQUEST = 'Cannot Process Request'
 
 
 // TODO show blocked users
@@ -174,7 +175,7 @@ describe('Groups', () => {
         it('Returns an error for an invalid ID', async () => {
             const { body: invalidGroupRequest } = await request(app).post(`/groups/join?group_id=invalid-group`).set(AUTHORIZATION_HEADER, `Bearer ${testuser3.token}`).expect(400)
             expect(invalidGroupRequest.status).toBe(ERROR_STATUS);
-            expect(invalidGroupRequest.message).toBe("Cannot Process Request");
+            expect(invalidGroupRequest.message).toBe(CANNOT_PROCESS_REQUEST);
         });
     });
 
@@ -231,7 +232,7 @@ describe('Groups', () => {
 
             const { body: validGroupNoUser } = await addUserToGroup("", ctrlholtdel.token, user1Group1.id, 400)
             expect(validGroupNoUser.status).toBe(ERROR_STATUS);
-            expect(validGroupNoUser.message).toBe("Cannot Process Request");
+            expect(validGroupNoUser.message).toBe(CANNOT_PROCESS_REQUEST);
         });
 
         it('Validates the user if there is a pre-existing request', async () => {
@@ -269,7 +270,7 @@ describe('Players', () => {
             const { body: malformedId } = await getPlayersList('invalid-group-id', ctrlholtdel.token, 400)
 
             expect(malformedId.status).toBe(ERROR_STATUS);
-            expect(malformedId.message).toBe("Cannot Process Request");  
+            expect(malformedId.message).toBe(CANNOT_PROCESS_REQUEST);  
         });
 
         it('E2E: Returns an error if the user has no access to the group', async () => {
@@ -277,7 +278,7 @@ describe('Players', () => {
 
             const { body: playersListGroup1Unvalidated } = await getPlayersList(user1Group1.id, newUser.token, 400) 
             expect(playersListGroup1Unvalidated.status).toBe(ERROR_STATUS);
-            expect(playersListGroup1Unvalidated.message).toBe('Cannot Process Request');
+            expect(playersListGroup1Unvalidated.message).toBe(CANNOT_PROCESS_REQUEST);
     
             await request(app).post(`/groups/join?group_id=${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${newUser.token}`).expect(201)
             const { body: playersListGroup1UnvalidatedAfterRequest } = await getPlayersList(user1Group1.id, newUser.token, 400)
@@ -321,13 +322,13 @@ describe('Players', () => {
             it('Returns an error if limit is not a number', async () => {
                 const { body: invalidLimit } = await getPlayersList(user1Group1.id, ctrlholtdel.token, 400, "invalid-limit")
                 expect(invalidLimit.status).toBe(ERROR_STATUS);
-                expect(invalidLimit.message).toBe('Cannot Process Request');
+                expect(invalidLimit.message).toBe(CANNOT_PROCESS_REQUEST);
             })
         })
 
     });
 
-    describe('POST::/players/:groupId/:player_name', () => {
+    describe('POST::/players/:groupId', () => {
         const newPlayerName = 'new_player'
 
         it('Admin can add a new player to the group', async () => {
@@ -413,6 +414,32 @@ describe('Players', () => {
             expect(playerResponse.message).toBe("Error Handling Request");            
         });
     });
+
+    describe('PUT::/players/:groupId', () => { 
+
+        let playerName = 'Test Player'
+        const updatedType = 'new type'
+        let addedPlayer;
+
+        beforeEach(async () => {
+            const { body: initialPlayer } = await addPlayer(user1Group2.id, ctrlholtdel.token, playerName)
+            addedPlayer = initialPlayer            
+        })
+
+        it('Can update the type of a player', async () => {
+            const { body } = await request(app).put(`/players/${user1Group2.id}/${addedPlayer.data.addedPlayer.id}`).send({ type: updatedType }).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(201)
+            expect(body.status).toBe(SUCCESS_STATUS);
+            expect(body.data.updatedPlayer.type).toBe(updatedType);
+            expect(body.data.updatedPlayer.name).toBe(playerName);
+        });
+
+        it('User without group access can\'t update player', async () => {
+            const { body } = await request(app).put(`/players/${user1Group2.id}/${addedPlayer.data.addedPlayer.id}`).send({ type: updatedType }).set(AUTHORIZATION_HEADER, `Bearer ${testuser3.token}`).expect(400)                
+            expect(body.status).toBe(ERROR_STATUS);
+            expect(body.message).toBe("Error Handling Request");
+        });
+
+    })
 })
 
 describe('Notes', () => {
@@ -428,11 +455,18 @@ describe('Notes', () => {
     })
 
     describe('GET::/notes/:player_id', () => {
-
         it('Should return all notes/tendencies on a user', async () => {
             const { body: notesResponse } = await getNotes(player1.id, ctrlholtdel.token)
             expect(notesResponse.status).toBe(SUCCESS_STATUS);
             expect(notesResponse.data.notes).toHaveLength(4);
+            expect(notesResponse.data.player).toMatchObject({
+                created_by: "ctrlholtdel",
+                created_time: expect.any(String),
+                id: "1",
+                name: "player 1",
+                note_group_id: "1",
+                type: null, 
+            })
         });
 
         it('Users without access shouldn\'nt be able to get the notes', async () => {
@@ -443,7 +477,7 @@ describe('Notes', () => {
         it('Errors correctly if trying to access a non-existent player', async () => {
             const { body: notesResponseInvalidUser } = await getNotes("not-a-real-id", testuser1.token, 400)
             expect(notesResponseInvalidUser.status).toBe(ERROR_STATUS);
-            expect(notesResponseInvalidUser.message).toBe("Cannot Process Request");
+            expect(notesResponseInvalidUser.message).toBe(CANNOT_PROCESS_REQUEST);
         });
     });
 
@@ -471,28 +505,27 @@ describe('Notes', () => {
         it('Can\'t add an empty note', async () => {
             const { body: emptyAddedNote } = await addNote(player1.id, ctrlholtdel.token,  { note: "", type: "note" }, 400)
             expect(emptyAddedNote.status).toBe(ERROR_STATUS);
-            expect(emptyAddedNote.message).toBe('Cannot Process Request');
+            expect(emptyAddedNote.message).toBe(CANNOT_PROCESS_REQUEST);
 
             const { body: noteMissingBodyAdded } = await addNote(player1.id, ctrlholtdel.token, { type: "note" }, 400)
             expect(noteMissingBodyAdded.status).toBe(ERROR_STATUS);
-            expect(noteMissingBodyAdded.message).toBe('Cannot Process Request');
+            expect(noteMissingBodyAdded.message).toBe(CANNOT_PROCESS_REQUEST);
         });
 
         it('Can\'t add a note with an invalid type', async () => {
             const { body: noteNoType } = await addNote(player1.id, ctrlholtdel.token, { note: "note here!" }, 400)
             expect(noteNoType.status).toBe(ERROR_STATUS);
-            expect(noteNoType.message).toBe("Cannot Process Request");
+            expect(noteNoType.message).toBe(CANNOT_PROCESS_REQUEST);
 
             const { body: noteInvalidType } = await addNote(player1.id, ctrlholtdel.token, { note: "note here!", type: "Invalid Type!" }, 400)
             expect(noteInvalidType.status).toBe(ERROR_STATUS);
-            expect(noteInvalidType.message).toBe("Cannot Process Request");
+            expect(noteInvalidType.message).toBe(CANNOT_PROCESS_REQUEST);
         });
 
         it('Unauthenticated users can\'t add a note', async () => {
             const { body: noteFromUnauthenticated } = await addNote(player1.id, testuser3.token, { note: "Trying to add a note to a player I don't have access to", type: "note" }, 400)
             expect(noteFromUnauthenticated.status).toBe(ERROR_STATUS);
-            expect(noteFromUnauthenticated.message).toBe("Cannot Process Request");
-
+            expect(noteFromUnauthenticated.message).toBe(CANNOT_PROCESS_REQUEST);
         });
     })
 

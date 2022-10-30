@@ -89,3 +89,14 @@ exports.addPlayer = async (username, noteGroupId, newPlayerName) => {
 
   return newPlayer;
 };
+
+exports.amendPlayer = async (username, group_id, player_id, body) => {
+  await checkGroupStatus(username, group_id)
+
+  const { type } = body
+  const { rows } = await db.query(`UPDATE players SET type = $1 WHERE note_group_id = $2 AND id = $3 RETURNING *`, [type, group_id, player_id])
+
+  if(!rows.length) return Promise.reject({ status: 400, message: "Player doesn't exist" })
+
+  return rows[0]
+}

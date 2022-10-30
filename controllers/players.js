@@ -1,4 +1,4 @@
-const { fetchPlayers, addPlayer, fetchPlayer } = require("../models/players")
+const { fetchPlayers, addPlayer, fetchPlayer, amendPlayer } = require("../models/players")
 
 exports.getPlayers = async (req, res, next) => {
     const { group_id } = req.params
@@ -33,6 +33,19 @@ exports.postAddPlayer = async(req, res, next) => {
     try {
         const addedPlayer = await addPlayer(username, group_id, playerName)
         res.status(201).send({ status: "success", data: { addedPlayer: addedPlayer[0] } })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.updatePlayer = async (req, res, next) => {
+
+    const { group_id, player_id } = req.params
+    const { username } = req.user
+
+    try {
+        const updatedPlayer = await amendPlayer(username, group_id, player_id, req.body)
+        res.status(201).send({ status: "success", data: { updatedPlayer }})
     } catch (error) {
         next(error)
     }

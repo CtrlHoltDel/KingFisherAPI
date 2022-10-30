@@ -1,6 +1,6 @@
 const ENV = process.env.NODE_ENV || "development";
 
-const { validateToken } = require("./middleware/auth");
+const { validateToken, groupAccess } = require("./middleware/auth");
 
 require("dotenv").config({
   path: `${__dirname}/.env.${ENV}`,
@@ -21,11 +21,10 @@ app.use(cors())
 app.use(express.json());
 const server = require("http").Server(app);
 
+app.use(validateToken)
+
 app.post("/auth/register", postRegister)
 app.post("/auth/login", postLogin);
-
-app.use(validateToken);
-
 app.use("/groups", groupsRouter)
 app.use("/players", playersRouter)
 app.use("/notes", notesRouter)
