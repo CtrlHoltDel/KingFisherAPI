@@ -1,5 +1,4 @@
 const db = require("../db/connection");
-const { checkGroupOwnership, checkGroupStatus } = require("../utils/dbUtils");
 const generateUUID = require("../utils/UUID");
 
 exports.fetchGroups = async (username) => {
@@ -122,9 +121,6 @@ exports.checkGroupRequests = async (username) => {
 };
 
 exports.handleUserRequest = async (currentUsername, action, group_id, username) => {
-
-  await checkGroupStatus(currentUsername, group_id);
-
   if(!username) return Promise.reject({ status: 400, message: "Cannot Process Request" })
 
   username = username.toLowerCase()

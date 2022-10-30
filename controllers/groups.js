@@ -54,7 +54,6 @@ exports.postHandleUserRequest = async (req, res, next) => {
     const { username: currentUsername } = req.user
     const { group_id } = req.params
     const { username } = req.query
-    console.log("first")
     try {
         const message = await handleUserRequest(currentUsername, action, group_id, username)
         res.status(201).send({ status: "success",  data: { message }})

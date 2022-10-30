@@ -6,23 +6,10 @@ exports.fetchPlayers = async (groupId, username, limit, search) => {
   if(!limit) limit = 10
   if(!Number(limit)) return Promise.reject({ status: 400, message: "Cannot Process Request" })
 
-  const { rows: groupCheck } = await db.query(
-    `SELECT username, admin, validated, blocked FROM note_group_junction WHERE note_group = $1 AND username = $2`,
-    [groupId, username]
-  );
-
-  if (!groupCheck.length)
-    return Promise.reject({ status: 400, message: "Cannot Process Request" });
-  if (groupCheck[0].blocked)
-    return Promise.reject({ status: 400, message: "Cannot Process Request" });
-  if (!groupCheck[0].validated)
-    return Promise.reject({ status: 400, message: "Pending Request" });
-
   let { rows: players } = await db.query(
     `SELECT * FROM players WHERE note_group_id = $1 AND name ILIKE $2 LIMIT $3`,
     [groupId, search ? `%${search}%` : '%%', limit || 10]
   );
-
 
   // Formatting and looking for exact match
   if(search){
@@ -47,7 +34,9 @@ exports.fetchPlayers = async (groupId, username, limit, search) => {
 };
 
 exports.fetchPlayer = async (groupId, username, searchedPlayerId) => {
-  await checkGroupStatus(username, groupId)
+
+  // TODO: Move to middleware
+  // await checkGroupStatus(username, groupId)
 
   const { rows } = await db.query(`
     SELECT
@@ -77,10 +66,7 @@ exports.fetchPlayer = async (groupId, username, searchedPlayerId) => {
 };
 
 exports.addPlayer = async (username, noteGroupId, newPlayerName) => {
-
   if(!newPlayerName) return Promise.reject({ status: 400, message: "Name cannot be a null value" })
-  
-  await checkGroupStatus(username, noteGroupId);
   
   const { rows: newPlayer } = await db.query(
     `INSERT INTO players(id, name, created_by, note_group_id) VALUES($1, $2, $3, $4) RETURNING name, created_time, created_by, id`,
@@ -91,8 +77,6 @@ exports.addPlayer = async (username, noteGroupId, newPlayerName) => {
 };
 
 exports.amendPlayer = async (username, group_id, player_id, body) => {
-  await checkGroupStatus(username, group_id)
-
   const { type } = body
   const { rows } = await db.query(`UPDATE players SET type = $1 WHERE note_group_id = $2 AND id = $3 RETURNING *`, [type, group_id, player_id])
 

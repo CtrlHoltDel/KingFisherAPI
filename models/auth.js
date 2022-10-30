@@ -1,7 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../db/connection");
-const EM = require("../utils/errorMessages");
 const generateUUID = require("../utils/UUID");
 
 exports.handleLogin = async (username, password) => {
@@ -17,11 +16,11 @@ exports.handleLogin = async (username, password) => {
       username,
     ]);
 
-    if (!rows.length) return Promise.reject(EM.invalidCredentials);
+    if (!rows.length) return Promise.reject({ status: 403, message: "invalid credentials" });
 
     const validPassword = await bcrypt.compare(`${password}`, rows[0].password);
 
-    if (!validPassword) return Promise.reject(EM.invalidCredentials);
+    if (!validPassword) return Promise.reject({ status: 403, message: "invalid credentials" });
 
     const token = jwt.sign(
       { username: rows[0].username },
