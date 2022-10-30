@@ -1,49 +1,46 @@
 const { fetchGroups, insertGroup, requestGroupJoin, checkGroupRequests, handleUserRequest } = require("../models/groups");
+const { successMessage } = require("../utils/responses");
 
-// Groups the user is part of.
 exports.getGroups = async (req, res, next) => {
     const { username } = req.user
 
     try {
         const groups = await fetchGroups(username)
-        res.status(200).send({ status: "success", data: { groups }});
+        res.status(200).send(successMessage({ groups }));
     } catch (err) {
         next(err)
     }
 
 }
 
-// Adding a new group
 exports.postGroup = async (req, res, next) => {
     const { username } = req.user
-    const { body: { name } } = req
+    const { name: newGroupName } = req.body
 
     try {
-        const addedGroup = await insertGroup(username, name)
-        res.status(201).send({ status: "success", data: { ...addedGroup } })
+        const addedGroup = await insertGroup(username, newGroupName)
+        res.status(201).send(successMessage({ addedGroup }))
     } catch (err) {
         next(err)
     }
 }
 
-// Requesting to join a group
 exports.postJoinGroup = async (req, res, next) => {
     const { query, user } = req
 
     try {
         const joinRequestApproved = await requestGroupJoin(query.group_id, user.username)
-        res.status(201).send({ status: "success", data: { ...joinRequestApproved }})
+        res.status(201).send(successMessage(joinRequestApproved))
     } catch (err) {
         next(err)
     }
 }
 
-// Getting requests to a users group
 exports.getGroupRequests = async (req, res, next) => {
     const { user } = req;
     try {
         const groupRequests = await checkGroupRequests(user.username)
-        res.status(200).send({ status: "success", data: { groupRequests }})
+        res.status(200).send(successMessage({ groupRequests }))
     } catch (err) {
         next(err)
     }
@@ -56,7 +53,7 @@ exports.postHandleUserRequest = async (req, res, next) => {
     const { username } = req.query
     try {
         const message = await handleUserRequest(currentUsername, action, group_id, username)
-        res.status(201).send({ status: "success",  data: { message }})
+        res.status(201).send(successMessage({ message }))
     } catch (err) {
         next(err)
     }

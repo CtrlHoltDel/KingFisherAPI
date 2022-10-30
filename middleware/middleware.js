@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const db = require("../db/connection");
+const { restrictedError } = require("../utils/responses");
 const openPaths = ['/auth/login', '/auth/register']
 
 exports.validateToken = (req, res, next) => {
@@ -31,7 +32,7 @@ exports.groupValidation = async (req, res, next) => {
     try {
         const { rows } = await db.query(`SELECT username, validated, admin FROM note_group_junction WHERE username = $1 AND note_group = $2`, [username, group_id])
         if(!rows.length || !rows[0].validated) {
-            res.status(400).send({ status: "error", message: "Error Handling Request" })
+            res.status(400).send(restrictedError)
             return
         }
     } catch (error) {
@@ -54,7 +55,7 @@ exports.playerValidation = async (req, res, next) => {
         const { rows: validityCheck } = await db.query(`SELECT validated FROM note_group_junction ngj JOIN players ON players.note_group_id = ngj.note_group WHERE ngj.username = $1 AND players.id = $2`, [username, player_id]);
 
         if(!validityCheck.length || !validityCheck[0].validated){
-            res.status(400).send({ status: "error", message: "Error Handling Request" })
+            res.status(400).send(restrictedError)
             return
         }
     } catch (error) {

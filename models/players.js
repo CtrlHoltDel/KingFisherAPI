@@ -1,5 +1,4 @@
 const db = require("../db/connection");
-const { checkGroupStatus } = require("../utils/dbUtils");
 const generateUUID = require("../utils/UUID");
 
 exports.fetchPlayers = async (groupId, username, limit, search) => {
@@ -73,7 +72,7 @@ exports.addPlayer = async (username, noteGroupId, newPlayerName) => {
     [generateUUID(), newPlayerName, username, noteGroupId]
   );
 
-  return newPlayer;
+  return newPlayer[0];
 };
 
 exports.amendPlayer = async (username, group_id, player_id, body) => {

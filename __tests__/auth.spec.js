@@ -3,6 +3,7 @@ const db = require("../db/connection");
 const request = require("supertest");
 
 const seedTest = require("../db/test-seed");
+const { restrictedError } = require("../utils/responses");
 
 const ERROR_STATUS = 'error'
 const SUCCESS_STATUS = 'success'
@@ -21,19 +22,41 @@ afterAll(async () => {
 });
 
 const newUserSetup = async (username) => {
-    const newUserDetails = { username, password: "123" }
-    await request(app).post('/auth/register').send(newUserDetails)
-    const { body: newUserResponse } = await request(app).post('/auth/login').send(newUserDetails)
+    const password = 'test'
+    await register(username, password)
+    const { body: newUserResponse } = await login(username, password)
     return newUserResponse.data
 }
 
+// ## POST /auth/register
+const register = async (username, password, expectedResponseCode) => await request(app).post('/auth/register').send({ username, password }).expect(expectedResponseCode || 201)
+
+// ## POST /auth/login
+const login = async (username, password, expectedResponseCode) => await request(app).post('/auth/login').send({ username, password }).expect(expectedResponseCode || 200)
+
+// ## GET /players/:group_id?limit=limit&search=search
 const getPlayersList = async (groupId, token, expectedResponseCode, limit, search) => await request(app).get(`/players/${groupId}?limit=${limit || ""}&search=${search || ""}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
+
+// ## POST /players/:group_id
 const addPlayer = async (groupId, token, newPlayerName, expectedResponseCode) => await request(app).post(`/players/${groupId}`).send({ playerName: newPlayerName }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
+
+// ## GET /players/:group_id/:player_id
 const getPlayer = async (groupId, token, playerId, expectedResponseCode) => await request(app).get(`/players/${groupId}/${playerId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
+
+// ## GET /notes/:player_id
 const getNotes = async (playerId, token, expectedResponseCode) => await request(app).get(`/notes/${playerId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
+
+// ## POST /notes/:player_id
 const addNote = async (playerId, token, noteBody, expectedResponseCode) => await request(app).post(`/notes/${playerId}`).send(noteBody).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
+
+// ## POST /groups/handle-request/:group_id?username=username
 const addUserToGroup = async (usernameToAdd, token, groupId, expectedResponseCode) => await request(app).post(`/groups/handle-request/${groupId}?username=${usernameToAdd}`).send({ action: "add" }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
 
+// ## GET /groups
+const getGroups = async (token, expectedResponseCode) => await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
+
+// ## POST /groups
+const addGroup = async(name, token, expectedResponseCode) => await request(app).get('/groups').send({ name }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
 
 /*
 
@@ -59,19 +82,19 @@ let user1Group2;
 
 
 beforeAll(async () => {
-    const { body : user1Login } = await request(app).post('/auth/login').send({ username: "ctrlholtdel", password: "test" }).expect(200);
+    const { body: user1Login } = await login("ctrlholtdel", "test")
     ctrlholtdel = user1Login.data
 
-    const { body: user2Login } = await request(app).post('/auth/login').send({ username: "testuser1", password: "test" }).expect(200);
+    const { body: user2Login } = await login("testuser1", "test")
     testuser1 = user2Login.data
 
-    const { body: user3Login } = await request(app).post('/auth/login').send({ username: "testuser2", password: "test" }).expect(200);
+    const { body: user3Login } = await login("testuser2", "test")
     testuser2 = user3Login.data
 
-    const { body: user4Login } = await request(app).post('/auth/login').send({ username: "testuser3", password: "test" }).expect(200);
+    const { body: user4Login } = await login("testuser3", "test")
     testuser3 = user4Login.data
 
-    const { body: user1Groups } = await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`)
+    const { body: user1Groups } = await getGroups(ctrlholtdel.token)
 
     user1Group1 = user1Groups.data.groups[0]
     user1Group2 = user1Groups.data.groups[1]
@@ -116,11 +139,11 @@ describe("Auth", () => {
 
     describe('Malformed/No Token', () => {
         it('No token or invalid token returns an error', async () => {
-            const { body: noTokenRequest } = await request(app).get('/players').expect(403)
+            const { body: noTokenRequest } = await getPlayersList(user1Group1.id, null, 403)
             expect(noTokenRequest.status).toBe(ERROR_STATUS);
             expect(noTokenRequest.message).toBe('Restricted');
-    
-            const { body: invalidTokenRequest } = await request(app).get('/players').expect(403).set(AUTHORIZATION_HEADER, 'Bearer InvalidKey');
+
+            const { body: invalidTokenRequest } = await getPlayersList(user1Group1.id, 'Invalid Key', 403)
             expect(invalidTokenRequest.status).toBe(ERROR_STATUS);
             expect(invalidTokenRequest.message).toBe('Restricted');
         });
@@ -131,13 +154,13 @@ describe("Auth", () => {
 describe('Groups', () => { 
     describe('GET::/groups:', () => {        
         it('Returns a list of groups', async () => {
-            const { body } = await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+            const { body } = await getGroups(ctrlholtdel.token)
             expect(body.data.groups.length).toBe(2);
 
-            const { body: userInNoGroups } = await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${testuser1.token}`)
+            const { body: userInNoGroups } = await getGroups(testuser1.token)
             expect(userInNoGroups.data.groups).toHaveLength(2);
-    
-            const { body: userWithOneGroup } = await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${testuser3.token}`)
+
+            const { body: userWithOneGroup } = await getGroups(testuser3.token)
             expect(userWithOneGroup.data.groups).toHaveLength(0);
         });
     });
@@ -146,13 +169,14 @@ describe('Groups', () => {
         it('Creates a new group', async () => {
             const newGroupName = 'newGroup'
     
-            const { body: beforeAddingGroup } = await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`)
+            const { body: beforeAddingGroup } = await getGroups(ctrlholtdel.token)
             const beforeAddingGroupLength = beforeAddingGroup.data.groups.length
-    
+
             const { body } = await request(app).post('/groups').send({ "name": newGroupName }).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`)
-            expect(body.data.name).toBe(newGroupName.toLowerCase());
+            expect(body.data.addedGroup.name).toBe(newGroupName.toLowerCase());
     
-            const { body: newGroupList } = await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`)
+
+            const { body: newGroupList } = await getGroups(ctrlholtdel.token)
             expect(newGroupList.data.groups.length).toBe(beforeAddingGroupLength + 1);
         });
 
@@ -217,7 +241,7 @@ describe('Groups', () => {
         it('Can\'t add a user to a group you don\'t own', async () => {
             const { body } = await addUserToGroup(testuser3.username, testuser1.token, user1Group1.id, 400)
             expect(body.status).toBe('error');
-            expect(body.message).toBe('Error Handling Request');
+            expect(body.message).toBe(restrictedError.message);
         });
 
         it('Errors if you try adding to a non-existent group or non-existent user', async () => {
@@ -228,7 +252,7 @@ describe('Groups', () => {
 
             const { body: withInvalidGroupId } = await addUserToGroup(testuser3.username, ctrlholtdel.token, "invalid-group", 400)
             expect(withInvalidGroupId.status).toBe(ERROR_STATUS);
-            expect(withInvalidGroupId.message).toBe("Error Handling Request");
+            expect(withInvalidGroupId.message).toBe(restrictedError.message);
 
             const { body: validGroupNoUser } = await addUserToGroup("", ctrlholtdel.token, user1Group1.id, 400)
             expect(validGroupNoUser.status).toBe(ERROR_STATUS);
@@ -261,7 +285,7 @@ describe('Players', () => {
         it('Returns an error if you\'re not a member of the group', async () => {
             const { body: notValidated } = await getPlayersList(user1Group1.id, testuser3.token, 400)
             expect(notValidated.status).toBe(ERROR_STATUS);
-            expect(notValidated.message).toBe('Error Handling Request');    
+            expect(notValidated.message).toBe(restrictedError.message);    
         });
 
         it('Returns a list of players if you\'re a member of the group', async () => {
@@ -276,7 +300,7 @@ describe('Players', () => {
             const { body: malformedId } = await getPlayersList('invalid-group-id', ctrlholtdel.token, 400)
 
             expect(malformedId.status).toBe(ERROR_STATUS);
-            expect(malformedId.message).toBe('Error Handling Request');  
+            expect(malformedId.message).toBe(restrictedError.message);  
         });
 
         it('E2E: Returns an error if the user has no access to the group', async () => {
@@ -284,12 +308,12 @@ describe('Players', () => {
 
             const { body: playersListGroup1Unvalidated } = await getPlayersList(user1Group1.id, newUser.token, 400) 
             expect(playersListGroup1Unvalidated.status).toBe(ERROR_STATUS);
-            expect(playersListGroup1Unvalidated.message).toBe('Error Handling Request');
+            expect(playersListGroup1Unvalidated.message).toBe(restrictedError.message);
     
             await request(app).post(`/groups/join?group_id=${user1Group1.id}`).set(AUTHORIZATION_HEADER, `Bearer ${newUser.token}`).expect(201)
             const { body: playersListGroup1UnvalidatedAfterRequest } = await getPlayersList(user1Group1.id, newUser.token, 400)
             expect(playersListGroup1UnvalidatedAfterRequest.status).toBe(ERROR_STATUS);
-            expect(playersListGroup1UnvalidatedAfterRequest.message).toBe('Error Handling Request');    
+            expect(playersListGroup1UnvalidatedAfterRequest.message).toBe(restrictedError.message);    
 
             const { body: addedResponse } = await addUserToGroup(newUser.username, ctrlholtdel.token, user1Group1.id, 201)
             expect(addedResponse.status).toBe(SUCCESS_STATUS);
@@ -358,11 +382,11 @@ describe('Players', () => {
         it('Users not within the group can\'t add a player', async () => {
             const { body: unvalidatedUserPlayerAdd } = await addPlayer(user1Group1.id, testuser1.token, newPlayerName, 400)
             expect(unvalidatedUserPlayerAdd.status).toBe(ERROR_STATUS);
-            expect(unvalidatedUserPlayerAdd.message).toBe("Error Handling Request");
+            expect(unvalidatedUserPlayerAdd.message).toBe(restrictedError.message);
 
             const { body: unvalidatedUserPendingRequestPlayerAdd } = await addPlayer(user1Group1.id, testuser3.token, newPlayerName, 400)
             expect(unvalidatedUserPendingRequestPlayerAdd.status).toBe(ERROR_STATUS);
-            expect(unvalidatedUserPendingRequestPlayerAdd.message).toBe("Error Handling Request");
+            expect(unvalidatedUserPendingRequestPlayerAdd.message).toBe(restrictedError.message);
 
         });
 
@@ -378,7 +402,7 @@ describe('Players', () => {
        it('Throws an error if trying to add a user to a non-existent group', async () => {
             const { body: invalidGroupName } = await addPlayer("invalid-group-id", ctrlholtdel.token, newPlayerName, 400)
             expect(invalidGroupName.status).toBe(ERROR_STATUS);
-            expect(invalidGroupName.message).toBe("Error Handling Request");
+            expect(invalidGroupName.message).toBe(restrictedError.message);
        });
 
        it('Cant add an empty value as a player name', async () => {
@@ -417,7 +441,7 @@ describe('Players', () => {
         it('Returns an error if the user doesn\'t have group access', async () => {
             const { body: playerResponse } = await getPlayer(user1Group1.id, testuser3.token, existingPlayerId, 400)
             expect(playerResponse.status).toBe(ERROR_STATUS);
-            expect(playerResponse.message).toBe("Error Handling Request");            
+            expect(playerResponse.message).toBe(restrictedError.message);            
         });
     });
 
@@ -441,7 +465,7 @@ describe('Players', () => {
         it('User without group access can\'t update player', async () => {
             const { body } = await request(app).put(`/players/${user1Group2.id}/${addedPlayer.data.addedPlayer.id}`).send({ type: updatedType }).set(AUTHORIZATION_HEADER, `Bearer ${testuser3.token}`).expect(400)                
             expect(body.status).toBe(ERROR_STATUS);
-            expect(body.message).toBe("Error Handling Request");
+            expect(body.message).toBe(restrictedError.message);
         });
     })
 })
@@ -481,7 +505,7 @@ describe('Notes', () => {
         it('Errors correctly if trying to access a non-existent player', async () => {
             const { body: notesResponseInvalidUser } = await getNotes("not-a-real-id", testuser1.token, 400)
             expect(notesResponseInvalidUser.status).toBe(ERROR_STATUS);
-            expect(notesResponseInvalidUser.message).toBe("Error Handling Request");
+            expect(notesResponseInvalidUser.message).toBe(restrictedError.message);
         });
     });
 
@@ -529,7 +553,7 @@ describe('Notes', () => {
         it('Unauthenticated users can\'t add a note', async () => {
             const { body: noteFromUnauthenticated } = await addNote(player1.id, testuser3.token, { note: "Trying to add a note to a player I don't have access to", type: "note" }, 400)
             expect(noteFromUnauthenticated.status).toBe(ERROR_STATUS);
-            expect(noteFromUnauthenticated.message).toBe("Error Handling Request");
+            expect(noteFromUnauthenticated.message).toBe(restrictedError.message);
         });
     })
 
