@@ -4,9 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node listen.js",
     "test": "jest --watch",
     "cdb": "psql -f ./db/createDB.sql",
-    "seedTest": "node db/manual-seed.js"
+    "seedTest": "node db/manual-seed.js",
+    "seedHeroku": "NODE_ENV=production DATABASE_URL=$(heroku config:get DATABASE_URL) npm run seedTest"
   },
   "author": "",
   "license": "ISC",
