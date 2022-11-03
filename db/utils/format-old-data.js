@@ -47,8 +47,6 @@ const formatData = async () => {
         created_time: u_created_at,
         note_group: noteGroupId 
     })
-
-
   });
 
   const playersMap = {}
@@ -91,9 +89,6 @@ tendencies.forEach(({ player_name, tendency, t_created_at, t_created_by }) => {
     })
 })
 
-console.log(usernames)
-
-  console.log(`${__dirname.slice(0, -7)}/db/data/formatted-data.json`)
   await fs.writeFile(`${__dirname.slice(0, -9)}/db/data/formatted-data.json`, JSON.stringify(formattedData))
 };
 
