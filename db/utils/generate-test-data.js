@@ -2,7 +2,6 @@ const generateUUID = require("../../utils/UUID");
 const db = require("../connection");
 
 const insert = async () => {
-    console.log(process.env);
 
     const { TYPE, PLAYER_ID, NOTE_AMOUNT = 50, NOTE_PREFIX = 'note' } = process.env;
 

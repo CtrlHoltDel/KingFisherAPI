@@ -3,11 +3,10 @@ const { successMessage } = require("../utils/responses")
 
 exports.getPlayers = async (req, res, next) => {
     const { group_id } = req.params
-    const { username } = req.user
     const { limit, search } = req.query
 
     try {
-        const players = await fetchPlayers(group_id, username, limit, search)
+        const players = await fetchPlayers(group_id, limit, search)
         res.send(successMessage({ players }))
     } catch (error) {
         next(error)
@@ -15,11 +14,10 @@ exports.getPlayers = async (req, res, next) => {
 }
 
 exports.getPlayer = async (req, res, next) => {
-    const { group_id, player_id } = req.params
-    const { username } = req.user
+    const { player_id } = req.params
 
     try {
-        const player = await fetchPlayer(group_id, username, player_id)
+        const player = await fetchPlayer(player_id)
         res.send(successMessage({ player }))
     } catch (error) {
         next(error)

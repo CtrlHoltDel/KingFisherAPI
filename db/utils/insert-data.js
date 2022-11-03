@@ -18,8 +18,6 @@ const insertData = async ({
     ])
   );
 
-  console.log(users)
-
   const noteGroupQuery = format(
     `INSERT INTO note_group(id, name, created_time, created_by) VALUES %L`,
     note_group.map(({ id, name, created_time, created_by }) => [

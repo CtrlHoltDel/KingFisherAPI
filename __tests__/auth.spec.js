@@ -96,6 +96,8 @@ beforeAll(async () => {
 
     const { body: user1Groups } = await getGroups(ctrlholtdel.token)
 
+    console.log(user1Login);
+
     user1Group1 = user1Groups.data.groups[0]
     user1Group2 = user1Groups.data.groups[1]
 })
@@ -340,7 +342,7 @@ describe('Players', () => {
                 for (let index = 0; index < 5; index++) await addPlayer(user1Group1.id, ctrlholtdel.token, `search-me - ${index}`)
                 await addPlayer(user1Group1.id, ctrlholtdel.token, `r`)
 
-                const { body: playersListPaginatedDefault } = await getPlayersList(user1Group1.id, ctrlholtdel.token, null, null, 'search-me')
+                const { body: playersListPaginatedDefault } = await getPlayersList(user1Group1.id, ctrlholtdel.token, null, null, encodeURIComponent('search-me'))
                 expect(playersListPaginatedDefault.data.players).toHaveLength(5);
 
                 const { body: playersListWithExactMatch } = await getPlayersList(user1Group1.id, ctrlholtdel.token, null, null, 'r')
@@ -356,6 +358,13 @@ describe('Players', () => {
             })
         })
 
+        describe('Works with URI Encoding', () => {
+            it('Works with characters that need to be escaped', async () => {        
+                const playerName = '##//####a\\##player==!!dl'
+                const { body: responseFromEncodedAddedUser } = await addPlayer(user1Group1.id, ctrlholtdel.token, encodeURIComponent(playerName))
+                expect(responseFromEncodedAddedUser.data.addedPlayer.name).toBe(playerName);
+            });
+        });
     });
 
     describe('POST::/players/:groupId', () => {
@@ -424,7 +433,6 @@ describe('Players', () => {
             const { body: newlyAddedPlayer } = await addPlayer(user1Group1.id, ctrlholtdel.token, playerName, 201)
             const newPlayerData = newlyAddedPlayer.data.addedPlayer
 
-
             const { body: playerResponse } = await getPlayer(user1Group1.id, ctrlholtdel.token, newPlayerData.id, 200)
             expect(playerResponse.status).toBe(SUCCESS_STATUS);
             expect(playerResponse.data.player.playerName).toBe(playerName);
@@ -435,7 +443,8 @@ describe('Players', () => {
             expect(playerResponse2.status).toBe(SUCCESS_STATUS);
 
             expect(playerResponse2.data.player.playerName).toBe('player 1');
-            expect(playerResponse2.data.player.notes).toHaveLength(4);
+            expect(playerResponse2.data.player.notes).toHaveLength(3);
+            expect(playerResponse2.data.player.tendencies).toHaveLength(1);
         });
 
         it('Returns an error if the user doesn\'t have group access', async () => {

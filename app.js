@@ -1,6 +1,6 @@
 const ENV = process.env.NODE_ENV || "development";
 
-const { validateToken, groupMiddleware, groupValidation } = require("./middleware/middleware");
+const { validateToken } = require("./middleware/middleware");
 
 require("dotenv").config({
   path: `${__dirname}/.env.${ENV}`,

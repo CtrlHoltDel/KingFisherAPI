@@ -59,7 +59,6 @@ exports.playerValidation = async (req, res, next) => {
             return
         }
     } catch (error) {
-        console.log(error)
         next({ status: 400, message: "Error Handling Request" })
     }
     
