@@ -165,7 +165,7 @@ describe('Groups', () => {
         });
     });
 
-    describe.only('POST::/groups', () => { 
+    describe('POST::/groups', () => { 
         it('Creates a new group', async () => {
             const newGroupName = 'newGroup'
     
@@ -174,9 +174,11 @@ describe('Groups', () => {
             
             const { body } = await addGroup(newGroupName, ctrlholtdel.token)
             expect(body.data.addedGroup.name).toBe(newGroupName.toLowerCase());
+            expect(body.data.addedGroup.id).toBeTruthy();
 
             const { body: newGroupList } = await getGroups(ctrlholtdel.token)
             expect(newGroupList.data.groups.length).toBe(beforeAddingGroupLength + 1);
+            expect(body.data.addedGroup.id).toBe(newGroupList.data.groups[2].id);
         });
 
         it('Returns an error if trying to add an empty group', async () => {
