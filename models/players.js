@@ -15,6 +15,8 @@ exports.fetchPlayers = async (groupId, limit, search) => {
     [groupId, decodedSearch ? `%${decodedSearch}%` : '%%', limit || 10]
   );
 
+  console.log(players, "<< before")
+
   // Formatting and looking for exact match
   if(decodedSearch){
     const exactMatchFoundInInitialSearch = players.find(player => player.name === decodedSearch)
@@ -31,6 +33,8 @@ exports.fetchPlayers = async (groupId, limit, search) => {
       }
     }
   }
+
+  console.log(players, "<< after")
 
 
 
