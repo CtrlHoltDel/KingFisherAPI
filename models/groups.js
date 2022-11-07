@@ -57,7 +57,7 @@ exports.insertGroup = async (username, name) => {
       [groupId, true, true, username, generateUUID()]
     );
 
-    return { name: rows[0].name, created_time: rows[0].created_time };
+    return { name: rows[0].name, created_time: rows[0].created_time, id: rows[0].id, created_by: username };
   } catch (err) {
     return Promise.reject({ status: 404, message: err });
   }

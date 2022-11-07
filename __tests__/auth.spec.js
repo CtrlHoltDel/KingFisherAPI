@@ -56,7 +56,7 @@ const addUserToGroup = async (usernameToAdd, token, groupId, expectedResponseCod
 const getGroups = async (token, expectedResponseCode) => await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
 
 // ## POST /groups
-const addGroup = async(name, token, expectedResponseCode) => await request(app).get('/groups').send({ name }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
+const addGroup = async(name, token, expectedResponseCode) => await request(app).post('/groups').send({ name }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
 
 /*
 
@@ -95,8 +95,6 @@ beforeAll(async () => {
     testuser3 = user4Login.data
 
     const { body: user1Groups } = await getGroups(ctrlholtdel.token)
-
-    console.log(user1Login);
 
     user1Group1 = user1Groups.data.groups[0]
     user1Group2 = user1Groups.data.groups[1]
@@ -167,23 +165,22 @@ describe('Groups', () => {
         });
     });
 
-    describe('POST::/groups', () => { 
+    describe.only('POST::/groups', () => { 
         it('Creates a new group', async () => {
             const newGroupName = 'newGroup'
     
             const { body: beforeAddingGroup } = await getGroups(ctrlholtdel.token)
             const beforeAddingGroupLength = beforeAddingGroup.data.groups.length
-
-            const { body } = await request(app).post('/groups').send({ "name": newGroupName }).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`)
+            
+            const { body } = await addGroup(newGroupName, ctrlholtdel.token)
             expect(body.data.addedGroup.name).toBe(newGroupName.toLowerCase());
-    
 
             const { body: newGroupList } = await getGroups(ctrlholtdel.token)
             expect(newGroupList.data.groups.length).toBe(beforeAddingGroupLength + 1);
         });
 
         it('Returns an error if trying to add an empty group', async () => {
-            const { body } = await request(app).post('/groups').send({ "name": undefined }).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(401)
+            const { body } = await addGroup(undefined, ctrlholtdel.token, 401)
             expect(body.status).toBe(ERROR_STATUS);
             expect(body.message).toBe('Group name must be longer than 3 characters');
         });
