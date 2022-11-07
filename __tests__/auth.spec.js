@@ -28,6 +28,8 @@ const newUserSetup = async (username) => {
     return newUserResponse.data
 }
 
+// TODO: To get player info url shouldn't need group ID
+
 // ## POST /auth/register
 const register = async (username, password, expectedResponseCode) => await request(app).post('/auth/register').send({ username, password }).expect(expectedResponseCode || 201)
 
@@ -41,7 +43,7 @@ const getPlayersList = async (groupId, token, expectedResponseCode, limit, searc
 const addPlayer = async (groupId, token, newPlayerName, expectedResponseCode) => await request(app).post(`/players/${groupId}`).send({ playerName: newPlayerName }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
 
 // ## GET /players/:group_id/:player_id
-const getPlayer = async (groupId, token, playerId, expectedResponseCode) => await request(app).get(`/players/${groupId}/${playerId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
+const getPlayer = async (token, playerId, expectedResponseCode) => await request(app).get(`/players/get-player/${playerId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
 
 // ## GET /notes/:player_id
 const getNotes = async (playerId, token, expectedResponseCode) => await request(app).get(`/notes/${playerId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
@@ -424,7 +426,7 @@ describe('Players', () => {
        });
     });
 
-    describe('GET::/players/:groupId/:player_id', () => {
+    describe('GET::/players/get-player/:player_id', () => {
         const existingPlayerId = '1'
 
         it('Returns all information about a player', async () => {
@@ -432,13 +434,14 @@ describe('Players', () => {
             const { body: newlyAddedPlayer } = await addPlayer(user1Group1.id, ctrlholtdel.token, playerName, 201)
             const newPlayerData = newlyAddedPlayer.data.addedPlayer
 
-            const { body: playerResponse } = await getPlayer(user1Group1.id, ctrlholtdel.token, newPlayerData.id, 200)
+            const { body: playerResponse } = await getPlayer(ctrlholtdel.token, newPlayerData.id, 200)
+
             expect(playerResponse.status).toBe(SUCCESS_STATUS);
             expect(playerResponse.data.player.playerName).toBe(playerName);
             expect(playerResponse.data.player.notes).toHaveLength(0);
 
 
-            const { body: playerResponse2 } = await getPlayer(user1Group1.id, testuser2.token, existingPlayerId, 200)
+            const { body: playerResponse2 } = await getPlayer(testuser2.token, existingPlayerId, 200)
             expect(playerResponse2.status).toBe(SUCCESS_STATUS);
 
             expect(playerResponse2.data.player.playerName).toBe('player 1');
@@ -447,7 +450,7 @@ describe('Players', () => {
         });
 
         it('Returns an error if the user doesn\'t have group access', async () => {
-            const { body: playerResponse } = await getPlayer(user1Group1.id, testuser3.token, existingPlayerId, 400)
+            const { body: playerResponse } = await getPlayer(testuser3.token, existingPlayerId, 400)
             expect(playerResponse.status).toBe(ERROR_STATUS);
             expect(playerResponse.message).toBe(restrictedError.message);            
         });

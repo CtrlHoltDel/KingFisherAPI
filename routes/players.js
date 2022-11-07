@@ -1,10 +1,11 @@
 const playersRouter = require("express").Router();
 
 const { getPlayers, postAddPlayer, getPlayer, updatePlayer } = require("../controllers/players");
-const { groupValidation } = require("../middleware/middleware");
+const { groupValidation, playerValidation } = require("../middleware/middleware");
 
+playersRouter.route('/get-player/:player_id').get(playerValidation, getPlayer)
 playersRouter.route('/:group_id').get(groupValidation, getPlayers).post(groupValidation, postAddPlayer)
-playersRouter.route('/:group_id/:player_id').get(groupValidation, getPlayer).put(groupValidation, updatePlayer)
+playersRouter.route('/:group_id/:player_id').put(groupValidation, updatePlayer)
 
 
 

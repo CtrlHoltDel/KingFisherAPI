@@ -71,8 +71,6 @@ exports.fetchPlayer = async (searchedPlayerId) => {
   const notes = rows.filter(note => note.type === NOTE_TYPE)
   const tendencies = rows.filter(note => note.type === TENDENCY_TYPE)
 
-  console.log({playerName, notes, tendencies});
-
   return { playerName, notes, tendencies }
 };
 

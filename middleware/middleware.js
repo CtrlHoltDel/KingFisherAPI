@@ -5,7 +5,6 @@ const openPaths = ['/auth/login', '/auth/register']
 
 exports.validateToken = (req, res, next) => {
 
-
     if(openPaths.includes(req.path)) return next();
 
     const bearerHeader = req.headers["authorization"];
