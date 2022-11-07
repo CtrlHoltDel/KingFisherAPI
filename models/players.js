@@ -15,8 +15,6 @@ exports.fetchPlayers = async (groupId, limit, search) => {
     [groupId, decodedSearch ? `%${decodedSearch}%` : '%%', limit || 10]
   );
 
-  console.log(players, "<< before")
-
   // Formatting and looking for exact match
   if(decodedSearch){
     const exactMatchFoundInInitialSearch = players.find(player => player.name === decodedSearch)
@@ -29,14 +27,10 @@ exports.fetchPlayers = async (groupId, limit, search) => {
     } else {
       const { rows: foundExtraneousExactMatch } = await db.query('SELECT * FROM players WHERE note_group_id = $1 AND name = $2', [groupId, decodedSearch])
       if(foundExtraneousExactMatch.length !== 0) {
-        players = [{ ...foundExtraneousExactMatch[0], exactMatch: true }, ...players.slice((limit ? limit : 10) - 1)]
+        players = [{ ...foundExtraneousExactMatch[0], exactMatch: true }, ...players.slice(0, (limit ? limit : 10) - 1)]
       }
     }
   }
-
-  console.log(players, "<< after")
-
-
 
   return players;
 };
