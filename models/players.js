@@ -35,43 +35,6 @@ exports.fetchPlayers = async (groupId, limit, search) => {
   return players;
 };
 
-exports.fetchPlayer = async (searchedPlayerId) => {
-
-  const { rows } = await db.query(`
-    SELECT
-          players.name,
-          notes.note,
-          notes.type,
-          notes.created_time,
-          notes.created_by,
-          players.id
-    FROM
-      players
-    JOIN 
-      notes ON notes.player_id = players.id
-    WHERE
-      (notes.type = $1 OR notes.type = $2)
-    AND
-      players.id = $3
-    `,
-    [NOTE_TYPE, TENDENCY_TYPE, searchedPlayerId]
-  );
-
-
-  let playerName;
-  if(!rows.length){
-    const { rows: foundUsername } = await db.query(`SELECT name FROM players WHERE id = $1`, [searchedPlayerId])
-    playerName = foundUsername[0].name
-  } else {
-    playerName = rows[0].name
-  }
-
-  const notes = rows.filter(note => note.type === NOTE_TYPE)
-  const tendencies = rows.filter(note => note.type === TENDENCY_TYPE)
-
-  return { playerName, notes, tendencies }
-};
-
 exports.addPlayer = async (username, noteGroupId, newPlayerName) => {
   if(!newPlayerName) return Promise.reject({ status: 400, message: "Name cannot be a null value" })
   

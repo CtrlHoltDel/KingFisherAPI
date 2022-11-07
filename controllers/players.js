@@ -1,6 +1,9 @@
 const { fetchPlayers, addPlayer, fetchPlayer, amendPlayer } = require("../models/players")
 const { successMessage } = require("../utils/responses")
 
+const NOTE_TYPE = 'note'
+const TENDENCY_TYPE = 'tendency'
+
 exports.getPlayers = async (req, res, next) => {
     const { group_id } = req.params
     const { limit, search } = req.query
@@ -8,17 +11,6 @@ exports.getPlayers = async (req, res, next) => {
     try {
         const players = await fetchPlayers(group_id, limit, search)
         res.send(successMessage({ players }))
-    } catch (error) {
-        next(error)
-    }
-}
-
-exports.getPlayer = async (req, res, next) => {
-    const { player_id } = req.params
-
-    try {
-        const player = await fetchPlayer(player_id)
-        res.send(successMessage({ player }))
     } catch (error) {
         next(error)
     }

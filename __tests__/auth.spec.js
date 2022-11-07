@@ -41,10 +41,6 @@ const getPlayersList = async (groupId, token, expectedResponseCode, limit, searc
 
 // ## POST /players/:group_id
 const addPlayer = async (groupId, token, newPlayerName, expectedResponseCode) => await request(app).post(`/players/${groupId}`).send({ playerName: newPlayerName }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
-
-// ## GET /players/:group_id/:player_id
-const getPlayer = async (token, playerId, expectedResponseCode) => await request(app).get(`/players/get-player/${playerId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
-
 // ## GET /notes/:player_id
 const getNotes = async (playerId, token, expectedResponseCode) => await request(app).get(`/notes/${playerId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
 
@@ -426,36 +422,6 @@ describe('Players', () => {
        });
     });
 
-    describe('GET::/players/get-player/:player_id', () => {
-        const existingPlayerId = '1'
-
-        it('Returns all information about a player', async () => {
-            const playerName = 'new-player-name'
-            const { body: newlyAddedPlayer } = await addPlayer(user1Group1.id, ctrlholtdel.token, playerName, 201)
-            const newPlayerData = newlyAddedPlayer.data.addedPlayer
-
-            const { body: playerResponse } = await getPlayer(ctrlholtdel.token, newPlayerData.id, 200)
-
-            expect(playerResponse.status).toBe(SUCCESS_STATUS);
-            expect(playerResponse.data.player.playerName).toBe(playerName);
-            expect(playerResponse.data.player.notes).toHaveLength(0);
-
-
-            const { body: playerResponse2 } = await getPlayer(testuser2.token, existingPlayerId, 200)
-            expect(playerResponse2.status).toBe(SUCCESS_STATUS);
-
-            expect(playerResponse2.data.player.playerName).toBe('player 1');
-            expect(playerResponse2.data.player.notes).toHaveLength(3);
-            expect(playerResponse2.data.player.tendencies).toHaveLength(1);
-        });
-
-        it('Returns an error if the user doesn\'t have group access', async () => {
-            const { body: playerResponse } = await getPlayer(testuser3.token, existingPlayerId, 400)
-            expect(playerResponse.status).toBe(ERROR_STATUS);
-            expect(playerResponse.message).toBe(restrictedError.message);            
-        });
-    });
-
     describe('PUT::/players/:groupId', () => { 
         let playerName = 'Test Player'
         const updatedType = 'new type'
@@ -497,7 +463,10 @@ describe('Notes', () => {
         it('Should return all notes/tendencies on a user', async () => {
             const { body: notesResponse } = await getNotes(player1.id, ctrlholtdel.token)
             expect(notesResponse.status).toBe(SUCCESS_STATUS);
-            expect(notesResponse.data.notes).toHaveLength(4);
+
+            console.log(notesResponse.data);
+            expect(notesResponse.data.notes).toHaveLength(3);
+            expect(notesResponse.data.tendencies).toHaveLength(1);
             expect(notesResponse.data.player).toMatchObject({
                 created_by: "ctrlholtdel",
                 created_time: expect.any(String),
@@ -536,7 +505,7 @@ describe('Notes', () => {
 
             const { body: updatedNotes } = await getNotes(player1.id, ctrlholtdel.token, 200)
 
-            expect(updatedNotes.data.notes).toHaveLength(5);
+            expect(updatedNotes.data.notes).toHaveLength(4);
             expect(updatedNotes.data.notes[updatedNotes.data.notes.length - 1].note).toBe(newNote.note);
 
         });
