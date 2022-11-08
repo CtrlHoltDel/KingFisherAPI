@@ -1,10 +1,9 @@
 const groupsRouter = require("express").Router();
-const { getGroups, postGroup, postJoinGroup, getGroupRequests, postHandleUserRequest } = require("../controllers/groups");
-const { groupValidation } = require("../middleware/middleware");
+const { getGroups, postGroup, postJoinGroup, postHandleUserRequest } = require("../controllers/groups");
+const { groupValidation, groupValidationOnlyAdminAndOwner } = require("../middleware/middleware");
 
 groupsRouter.route('/').get(getGroups).post(postGroup);
 groupsRouter.route('/join').post(postJoinGroup)
-groupsRouter.route('/requests').get(getGroupRequests)
-groupsRouter.route('/handle-request/:group_id').post(groupValidation, postHandleUserRequest)
+groupsRouter.route('/handle-request/:group_id').post(groupValidationOnlyAdminAndOwner, postHandleUserRequest)
 
 module.exports = groupsRouter;

@@ -24,23 +24,6 @@ exports.validateToken = (req, res, next) => {
     }
 }
 
-exports.groupValidation = async (req, res, next) => {
-    const { username } = req.user
-    const { group_id } = req.params
-
-    try {
-        const { rows } = await db.query(`SELECT username, validated, admin FROM note_group_junction WHERE username = $1 AND note_group = $2`, [username, group_id])
-        if(!rows.length || !rows[0].validated) {
-            res.status(400).send(restrictedError)
-            return
-        }
-    } catch (error) {
-        next({ status: 400, message: "Error Handling Request" })
-    }
-
-    next()
-}
-
 exports.playerValidation = async (req, res, next) => {
     const { player_id } = req.params
     const { username } = req.user
@@ -62,4 +45,40 @@ exports.playerValidation = async (req, res, next) => {
     }
     
     next();
+}
+
+exports.groupValidation = async (req, res, next) => {
+    const { username } = req.user
+    const { group_id } = req.params
+
+    try {
+        const { rows } = await db.query(`SELECT username, validated, admin FROM note_group_junction WHERE username = $1 AND note_group = $2`, [username, group_id])
+        if(!rows.length || !rows[0].validated) {
+            res.status(400).send(restrictedError)
+            return
+        }
+    } catch (error) {
+        next({ status: 400, message: "Error Handling Request" })
+    }
+    next()
+}
+
+exports.groupValidationOnlyAdminAndOwner = async (req, res, next) => {
+    const { username } = req.user
+    const { group_id } = req.params
+
+    try {
+        const { rows } = await db.query(`SELECT username, validated, admin FROM note_group_junction WHERE username = $1 AND note_group = $2`, [username, group_id])
+        if(!rows.length || !rows[0].validated || !rows[0].admin) {
+            res.status(400).send(restrictedError)
+            return
+        }
+    } catch (error) {
+        next({ status: 400, message: "Error Handling Request" })
+    }
+    next()
+}
+
+exports.groupValidationOnlyOwner = async (req, res, next) => {
+    // TODO: add logic for only administrators
 }

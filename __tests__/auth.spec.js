@@ -49,6 +49,7 @@ const addNote = async (playerId, token, noteBody, expectedResponseCode) => await
 
 // ## POST /groups/handle-request/:group_id?username=username
 const addUserToGroup = async (usernameToAdd, token, groupId, expectedResponseCode) => await request(app).post(`/groups/handle-request/${groupId}?username=${usernameToAdd}`).send({ action: "add" }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
+const setUserToAdmin = async (usernameToSetToAdmin, token, groupId, expectedResponseCode) => await request(app).post(`/groups/handle-request/${groupId}?username=${usernameToSetToAdmin}`).send({ action: 'admin' }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
 
 // ## GET /groups
 const getGroups = async (token, expectedResponseCode) => await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
@@ -214,29 +215,23 @@ describe('Groups', () => {
         });
     });
 
-    describe('GET::/groups/requests', () => {        
-        it('Returns a list of your pending group requests', async () => {
-            const { body: initialRequests } = await request(app).get(`/groups/requests`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`)
-            expect(initialRequests.data.groupRequests).toHaveLength(1);
-    
-            await request(app).post(`/groups/join?group_id=${user1Group2.id}`).set(AUTHORIZATION_HEADER, `Bearer ${testuser3.token}`).expect(201)
+    describe('PUT::/groups/:group_id/username', () => {
+        it('Can set a preexisting user to administrator', async () => {
+            await addUserToGroup(testuser3.username, ctrlholtdel.token, user1Group1.id)
 
-            const { body: after2Requests } = await request(app).get(`/groups/requests`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
-            
-            expect(after2Requests.data.groupRequests).toHaveLength(2);
-            expect(after2Requests.data.groupRequests[1].group_name).toBe(user1Group2.name);
-    
-            await request(app).post(`/groups/join?group_id=${user1Group2.id}`).set(AUTHORIZATION_HEADER, `Bearer ${testuser1.token}`).expect(201)
-    
-            const { body: after3Requests } = await request(app).get(`/groups/requests`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
-    
-            expect(after3Requests.data.groupRequests).toHaveLength(3);
-            expect(after3Requests.data.groupRequests[2].group_name).toBe(user1Group2.name);
+            const { body: groupsList } = await getGroups(ctrlholtdel.token);
+            const addedUser = groupsList.data.groups[0].users.find(user => user.username === testuser3.username)
+
+            expect(addedUser.validated).toBe(true);
+            expect(addedUser.admin).toBe(false);
+
+            expect(groupAdminUpdated.status).toBe(SUCCESS_STATUS);
+            expect(groupAdminUpdated.data.message).toBe(`${testuser3.username} updated to admin on group ${user1Group1.id}`);
         });
     });
 
     describe('POST::/groups/handle-request/:group_id?username=username', () => {
-        it('Adds a user to a group you own', async () => {
+        it.only('Adds a user to a group you own', async () => {
             const { body: gettingGroupsBeforeAdded } = await request(app).get(`/groups`).set(AUTHORIZATION_HEADER, `Bearer ${testuser3.token}`).expect(200);
             expect(gettingGroupsBeforeAdded.data.groups).toHaveLength(0);
 
@@ -247,9 +242,10 @@ describe('Groups', () => {
 
             const { body: gettingGroupsAfterAdded } = await request(app).get(`/groups`).set(AUTHORIZATION_HEADER, `Bearer ${testuser3.token}`).expect(200);
             expect(gettingGroupsAfterAdded.data.groups).toHaveLength(1);
+            expect(gettingGroupsAfterAdded.data.groups[0].validated).toBe(true);
         });
 
-        it('Can\'t add a user to a group you don\'t own', async () => {
+        it('Can\'t add a user to a group you don\'t own or are not an admin of', async () => {
             const { body } = await addUserToGroup(testuser3.username, testuser1.token, user1Group1.id, 400)
             expect(body.status).toBe('error');
             expect(body.message).toBe(restrictedError.message);
@@ -279,7 +275,23 @@ describe('Groups', () => {
             expect(validatedUser.data.message).toBe(`${testuser3.username} added`);
         });
 
+        it.only('If a user is an admin of a group they can add users to that group', async () => {
+            // TODO: Test this - user is not an administrator so shouldn't be able to add users
+            await setUserToAdmin(testuser2.username, ctrlholtdel.token, user1Group1.id)
+            const { body: adminCheck } = await getGroups(ctrlholtdel.token)
+            console.log(adminCheck.data.groups[0].users);
 
+
+            const { body: groupsBeforeAdding } = await getGroups(testuser2.token)
+            expect(groupsBeforeAdding.data.groups[0].users).toHaveLength(3)
+
+            const { body: addingUserAsNotAdmin } = await addUserToGroup(testuser3.username, testuser2.token, user1Group1.id)
+            expect(addingUserAsNotAdmin.status).toBe(SUCCESS_STATUS);
+
+            const { body: groupsAfterAdding } = await getGroups(testuser2.token)
+            expect(groupsAfterAdding.data.groups[0].users).toHaveLength(4)
+            expect(groupsAfterAdding.data.groups[0].users.some(user => user.username === testuser3.username)).toBeTruthy()
+        })
     });
 
 })
