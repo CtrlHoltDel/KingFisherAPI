@@ -161,6 +161,18 @@ describe('Groups', () => {
             const { body: userWithOneGroup } = await getGroups(testuser3.token)
             expect(userWithOneGroup.data.groups).toHaveLength(0);
         });
+
+        it('Returns a list of users if you\'re an administrator of that group', async () => {
+            const { body: userWithAdmin } = await getGroups(ctrlholtdel.token);
+            expect(userWithAdmin.data.groups[0].users).toHaveLength(3);
+            expect(userWithAdmin.data.groups[1].users).toHaveLength(1);
+            
+            const { body: userWithoutAdmin } = await getGroups(testuser2.token);
+
+            expect(userWithoutAdmin.data.groups[0].validated).toBe(true);
+            expect(userWithoutAdmin.data.groups[0].admin).toBe(false);
+            expect(userWithoutAdmin.data.groups[0].users).toHaveLength(0);
+        });
     });
 
     describe('POST::/groups', () => { 
@@ -463,8 +475,6 @@ describe('Notes', () => {
         it('Should return all notes/tendencies on a user', async () => {
             const { body: notesResponse } = await getNotes(player1.id, ctrlholtdel.token)
             expect(notesResponse.status).toBe(SUCCESS_STATUS);
-
-            console.log(notesResponse.data);
             expect(notesResponse.data.notes).toHaveLength(3);
             expect(notesResponse.data.tendencies).toHaveLength(1);
             expect(notesResponse.data.player).toMatchObject({

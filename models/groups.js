@@ -4,13 +4,14 @@ const generateUUID = require("../utils/UUID");
 exports.fetchGroups = async (username) => {
 
   // Update to return all groups you're a part of and pending requests
-  const { rows } = await db.query(
+  const { rows: groups } = await db.query(
     `SELECT
         ng.name,
         ng.id,
         ng.created_by,
         ngj.validated,
-        ng.created_time
+        ng.created_time,
+        ngj.admin
     FROM
         "note_group_junction" ngj
         JOIN "note_group" ng ON ng.id = ngj.note_group
@@ -21,8 +22,18 @@ exports.fetchGroups = async (username) => {
       `,
     [username, false]
   );
+
+  // Getting all related users if the user is an admin of that group
+  const adminGroupIds = groups.filter(group => group.admin).map(group => group.id)
   
-  return rows;
+  if(adminGroupIds.length){
+    const searchString = adminGroupIds.reduce((curr, next, index) => curr + `note_group = $${index + 1}${index === adminGroupIds.length - 1 ? '' : ' OR '}`, '')
+    const { rows: users } = await db.query(`SELECT username, admin, validated, blocked, note_group FROM note_group_junction WHERE ${searchString};`, adminGroupIds)
+    const formattedGroups = groups.map(group => group.admin ? { ...group, users: users.filter(user => user.note_group === group.id )} : group )
+    return formattedGroups
+  }
+
+  return groups.map(group => ({ ...group, users: [] }));
 };
 
 exports.insertGroup = async (username, name) => {
