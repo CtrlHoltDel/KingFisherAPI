@@ -1,4 +1,4 @@
-const { fetchNotes, postNote } = require("../models/notes")
+const { fetchNotes, postNote, removeNote } = require("../models/notes")
 const { successMessage } = require("../utils/responses")
 
 exports.getNotes = async (req, res, next) => {
@@ -20,6 +20,17 @@ exports.addNote = async (req, res, next) => {
     try {
         const addedNote = await postNote(username, player_id, note, type)
         res.status(201).send(successMessage({ addedNote }))
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.delNote = async (req, res, next) => {
+    const { note_id } = req.params
+
+    try {
+        await removeNote(note_id)
+        res.send(successMessage({ message: `Note ${note_id} deleted`}))
     } catch (error) {
         next(error)
     }

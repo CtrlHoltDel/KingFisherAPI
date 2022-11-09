@@ -135,12 +135,8 @@ exports.handleUserRequest = async (currentUsername, action, group_id, username) 
   } 
 
   if(action.toLowerCase() === 'admin'){
-    console.log(`Set ${username} to admin on group ${group_id}`);
-
     await db.query(`UPDATE note_group_junction SET admin = $1 WHERE note_group = $2 AND username = $3 returning note_group, username`, [true, group_id, username])
-
     return `${username} updated to admin on group ${group_id}`
-
   }
 
   return Promise.reject({ status: 400, message: "Cannot Process Request" })

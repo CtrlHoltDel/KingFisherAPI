@@ -227,7 +227,6 @@ describe('Groups', () => {
 
             const { body: userSetToAdmin } = await setUserToAdmin(testuser3.username, ctrlholtdel.token, user1Group1.id)
 
-            console.log({ userSetToAdmin });
             expect(userSetToAdmin.status).toBe(SUCCESS_STATUS);
             expect(userSetToAdmin.data.message).toBe(`${testuser3.username} updated to admin on group ${user1Group1.id}`);
         });
@@ -561,6 +560,37 @@ describe('Notes', () => {
         });
     })
 
+    describe('DEL notes/:note_id', () => {
+        
+        const PLAYER_ID = '1'
+        let noteIdToDelete;
+        let playerIdNotesLength;
+        beforeEach(async () => {
+            const { body: notes } = await getNotes(PLAYER_ID, ctrlholtdel.token)
+            expect(notes.data.notes).toHaveLength(3);
+            playerIdNotesLength = notes.data.notes.length
+            noteIdToDelete = notes.data.notes[0].id
+        })
+        
+        it('Can Delete Notes', async () => {
+            const { body: deletedNote } = await request(app).delete(`/notes/${noteIdToDelete}`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+
+            expect(deletedNote.status).toBe(SUCCESS_STATUS);
+            expect(deletedNote.data.message).toBe(`Note ${noteIdToDelete} deleted`);
+
+            const { body: notesAfterDelete } = await getNotes(PLAYER_ID, ctrlholtdel.token)
+            expect(notesAfterDelete.data.notes).toHaveLength(playerIdNotesLength - 1);
+        });
+
+        it('Unvalidated users can\'t delete notes', async () => {
+            const { body: notes } = await getNotes(PLAYER_ID, testuser1.token, 400)
+            expect(notes.status).toBe(ERROR_STATUS);
+
+            const { body: notesAfterUnvalidatedDelete } = await request(app).delete(`/notes/${noteIdToDelete}`).set(AUTHORIZATION_HEADER, `Bearer ${testuser1.token}`).expect(400)
+            expect(notesAfterUnvalidatedDelete.status).toBe(ERROR_STATUS);
+        });
+    });
+
 })
 
 describe('Middleware E2E', () => {
@@ -571,7 +601,7 @@ describe('Middleware E2E', () => {
         // testuser1 has a pending request
         // testuser2 is validated in group 1
         // testuser3 has no pending request
-        it.only('Unvalidated users with pending request can\'t access endpoints E2E', async () => {
+        it('Unvalidated users with pending request can\'t access endpoints E2E', async () => {
 
             // Getting the group
             const { body: kingfisherGroup } = await getGroups(ctrlholtdel.token)
