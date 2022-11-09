@@ -225,13 +225,16 @@ describe('Groups', () => {
             expect(addedUser.validated).toBe(true);
             expect(addedUser.admin).toBe(false);
 
-            expect(groupAdminUpdated.status).toBe(SUCCESS_STATUS);
-            expect(groupAdminUpdated.data.message).toBe(`${testuser3.username} updated to admin on group ${user1Group1.id}`);
+            const { body: userSetToAdmin } = await setUserToAdmin(testuser3.username, ctrlholtdel.token, user1Group1.id)
+
+            console.log({ userSetToAdmin });
+            expect(userSetToAdmin.status).toBe(SUCCESS_STATUS);
+            expect(userSetToAdmin.data.message).toBe(`${testuser3.username} updated to admin on group ${user1Group1.id}`);
         });
     });
 
     describe('POST::/groups/handle-request/:group_id?username=username', () => {
-        it.only('Adds a user to a group you own', async () => {
+        it('Adds a user to a group you own', async () => {
             const { body: gettingGroupsBeforeAdded } = await request(app).get(`/groups`).set(AUTHORIZATION_HEADER, `Bearer ${testuser3.token}`).expect(200);
             expect(gettingGroupsBeforeAdded.data.groups).toHaveLength(0);
 
@@ -275,12 +278,11 @@ describe('Groups', () => {
             expect(validatedUser.data.message).toBe(`${testuser3.username} added`);
         });
 
-        it.only('If a user is an admin of a group they can add users to that group', async () => {
+        it('If a user is an admin of a group they can add users to that group', async () => {
             // TODO: Test this - user is not an administrator so shouldn't be able to add users
             await setUserToAdmin(testuser2.username, ctrlholtdel.token, user1Group1.id)
             const { body: adminCheck } = await getGroups(ctrlholtdel.token)
             console.log(adminCheck.data.groups[0].users);
-
 
             const { body: groupsBeforeAdding } = await getGroups(testuser2.token)
             expect(groupsBeforeAdding.data.groups[0].users).toHaveLength(3)
@@ -560,3 +562,54 @@ describe('Notes', () => {
     })
 
 })
+
+describe('Middleware E2E', () => {
+    const KINGFISHER_GROUP_NAME = 'kingfisher'
+
+    describe('Unvalidated', () => {
+        // ctrlholtdel owns group 1
+        // testuser1 has a pending request
+        // testuser2 is validated in group 1
+        // testuser3 has no pending request
+        it.only('Unvalidated users with pending request can\'t access endpoints E2E', async () => {
+
+            // Getting the group
+            const { body: kingfisherGroup } = await getGroups(ctrlholtdel.token)
+            const kingfisher = kingfisherGroup.data.groups.find(group => group.name === KINGFISHER_GROUP_NAME)
+            // getting player IDs from kingfisher group
+            const { body: playersFromValidatedGroup } = await getPlayersList(kingfisher.id, ctrlholtdel.token)
+            const playerIds = playersFromValidatedGroup.data.players.map(player => player.id)
+
+
+            // Can't access the data in the players list
+            const { body: playerCheck } = await getPlayersList(kingfisher.id, testuser1.token, 400)
+            expect(playerCheck.status).toBe(ERROR_STATUS);
+            expect(playerCheck.message).toBe(restrictedError.message);
+            
+            // Can't access the notes
+            const { body: playerSearchCheckUnvalidated } = await getNotes(playerIds[0], testuser1.token, 400)
+            expect(playerSearchCheckUnvalidated.status).toBe(ERROR_STATUS);
+            expect(playerSearchCheckUnvalidated.message).toBe(restrictedError.message);
+
+
+            // Unvalidated No request can't access notes
+            const { body: playerSearchUnvalidatedNoPending } = await getNotes(playerIds[0], testuser3.token, 400)
+            expect(playerSearchUnvalidatedNoPending.status).toBe(ERROR_STATUS);
+
+
+            // Validated admin can access notes
+            const { body: playerSearchCheckValidatedAdmin } = await getNotes(playerIds[0], ctrlholtdel.token)
+            expect(playerSearchCheckValidatedAdmin.status).toBe(SUCCESS_STATUS);
+
+
+            // Validated non admin can access notes
+            const { body: playerSearchCheckValidated } = await getNotes(playerIds[0], testuser2.token)
+            expect(playerSearchCheckValidated.status).toBe(SUCCESS_STATUS);
+        });
+
+    });
+
+    describe('Admin', () => {
+        
+    });
+});
