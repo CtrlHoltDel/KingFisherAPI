@@ -39,7 +39,7 @@ exports.addPlayer = async (username, noteGroupId, newPlayerName) => {
   if(!newPlayerName) return Promise.reject({ status: 400, message: "Name cannot be a null value" })
   
   const { rows: newPlayer } = await db.query(
-    `INSERT INTO players(id, name, created_by, note_group_id) VALUES($1, $2, $3, $4) LIMIT 1 RETURNING name, created_time, created_by, id`,
+    `INSERT INTO players(id, name, created_by, note_group_id) VALUES($1, $2, $3, $4) LIMIT 1 RETURNING name, created_time, created_by, id, type, note_group_id`,
     [generateUUID(), newPlayerName, username, noteGroupId]
   );
 

@@ -281,7 +281,6 @@ describe('Groups', () => {
             // TODO: Test this - user is not an administrator so shouldn't be able to add users
             await setUserToAdmin(testuser2.username, ctrlholtdel.token, user1Group1.id)
             const { body: adminCheck } = await getGroups(ctrlholtdel.token)
-            console.log(adminCheck.data.groups[0].users);
 
             const { body: groupsBeforeAdding } = await getGroups(testuser2.token)
             expect(groupsBeforeAdding.data.groups[0].users).toHaveLength(3)
@@ -408,6 +407,14 @@ describe('Players', () => {
         it('Validated Users can add a new player', async () => {
             const { body: addedByTestUser } = await addPlayer(user1Group1.id, testuser2.token, newPlayerName, 201)
             expect(addedByTestUser.data.addedPlayer.name).toBe(newPlayerName);
+            expect(addedByTestUser.data.addedPlayer).toMatchObject({
+                name: newPlayerName,
+                created_time: expect.any(String),
+                created_by: testuser2.username,
+                id: expect.any(String),
+                type: null,
+                note_group_id: user1Group1.id, 
+            });
         });
 
         it('Users not within the group can\'t add a player', async () => {
