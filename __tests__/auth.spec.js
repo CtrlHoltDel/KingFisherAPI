@@ -497,6 +497,9 @@ describe('Notes', () => {
             expect(notesResponse.status).toBe(SUCCESS_STATUS);
             expect(notesResponse.data.notes).toHaveLength(3);
             expect(notesResponse.data.tendencies).toHaveLength(1);
+
+            console.log(notesResponse);
+
             expect(notesResponse.data.player).toMatchObject({
                 created_by: "ctrlholtdel",
                 created_time: expect.any(String),

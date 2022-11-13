@@ -6,6 +6,9 @@ exports.getNotes = async (req, res, next) => {
 
     try {
         const { notes, player, tendencies } = await fetchNotes(player_id)
+
+        console.log(notes, player, tendencies);
+
         res.send(successMessage({ notes, player, tendencies }))
     } catch (error) {
         next(error)

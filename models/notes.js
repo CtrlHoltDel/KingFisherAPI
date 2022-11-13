@@ -11,7 +11,6 @@ exports.fetchNotes = async (player_id) => {
     
     const notes = allTendenciesAndNotes.filter(note => note.type === NOTE_TYPE)
     const tendencies = allTendenciesAndNotes.filter(note => note.type === TENDENCY_TYPE)
-
     
     return { notes, tendencies, player: player[0] };
 }
