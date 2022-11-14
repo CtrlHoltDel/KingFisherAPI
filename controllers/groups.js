@@ -38,12 +38,11 @@ exports.postJoinGroup = async (req, res, next) => {
 
 exports.postHandleUserRequest = async (req, res, next) => {
     const { action } = req.body
-    const { username: currentUsername } = req.user
     const { group_id } = req.params
     const { username } = req.query
     try {
-        const message = await handleUserRequest(currentUsername, action, group_id, username)
-        res.status(201).send(successMessage({ message }))
+        const { status, message } = await handleUserRequest(action, group_id, username)
+        res.status(status || 201).send(successMessage({ message }))
     } catch (err) {
         next(err)
     }

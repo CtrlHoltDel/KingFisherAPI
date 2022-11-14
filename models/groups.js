@@ -116,7 +116,7 @@ exports.requestGroupJoin = async (groupId, username) => {
   }
 };
 
-exports.handleUserRequest = async (currentUsername, action, group_id, username) => {
+exports.handleUserRequest = async (action, group_id, username) => {
   if(!username) return Promise.reject({ status: 400, message: "Cannot Process Request" })
 
   username = username.toLowerCase()
@@ -127,16 +127,22 @@ exports.handleUserRequest = async (currentUsername, action, group_id, username) 
     if(alreadyExistsCheck.length){
       if(alreadyExistsCheck[0]?.validated || alreadyExistsCheck[0]?.admin) return `${username} already in group`
       await db.query(`UPDATE note_group_junction SET validated = $1 WHERE note_group = $2 AND username = $3`, [true, group_id, username])
-      return `${username} added`
+      return { message: `${username} added` }
     }    
     
     await db.query(`INSERT INTO note_group_junction (id, username, note_group, validated) VALUES ($1, $2, $3, $4)`, [generateUUID(), username, group_id, true]);
-    return `${username} added`
+    return { message: `${username} added` }
   } 
 
   if(action.toLowerCase() === 'admin'){
     await db.query(`UPDATE note_group_junction SET admin = $1 WHERE note_group = $2 AND username = $3 returning note_group, username`, [true, group_id, username])
-    return `${username} updated to admin on group ${group_id}`
+    return { message: `${username} updated to admin on group ${group_id}` }
+  }
+
+  if(action.toLowerCase() === 'remove'){
+    console.log(group_id, username)
+    await db.query(`DELETE FROM note_group_junction WHERE username = $1 AND note_group = $2`, [username, group_id])
+    return { status: 202, message: `${username} removed from group ${group_id}`}
   }
 
   return Promise.reject({ status: 400, message: "Cannot Process Request" })

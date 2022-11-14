@@ -48,6 +48,7 @@ const addNote = async (playerId, token, noteBody, expectedResponseCode) => await
 // ## POST /groups/handle-request/:group_id?username=username
 const addUserToGroup = async (usernameToAdd, token, groupId, expectedResponseCode) => await request(app).post(`/groups/handle-request/${groupId}?username=${usernameToAdd}`).send({ action: "add" }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
 const setUserToAdmin = async (usernameToSetToAdmin, token, groupId, expectedResponseCode) => await request(app).post(`/groups/handle-request/${groupId}?username=${usernameToSetToAdmin}`).send({ action: 'admin' }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
+const removeUserFromGroup = async (usernameToRemove, token, groupId, expectedResponseCode) => await request(app).post(`/groups/handle-request/${groupId}?username=${usernameToRemove}`).send({ action: "remove" }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 202)
 
 // ## GET /groups
 const getGroups = async (token, expectedResponseCode) => await request(app).get('/groups').set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
@@ -296,6 +297,44 @@ describe('Groups', () => {
             expect(groupsAfterAdding.data.groups[0].users).toHaveLength(4)
             expect(groupsAfterAdding.data.groups[0].users.some(user => user.username === testuser3.username)).toBeTruthy()
         })
+
+        describe.only('Removing Users From Group', () => {
+            const GROUP_NAME = 'kingfisher'
+            const USER_TO_REMOVE = 'testuser2'
+            let kingfisherGroup
+
+            beforeEach(async () => {
+                const { body: groupsBefore } = await getGroups(ctrlholtdel.token)
+                const selectedGroup = groupsBefore.data.groups.find(group => group.name === GROUP_NAME)
+                kingfisherGroup = selectedGroup
+            })
+
+            it('Can remove a user group a group you\'re an admin of', async () => {
+                expect(kingfisherGroup.users).toHaveLength(3);
+
+                const { body: removedUser } = await removeUserFromGroup(USER_TO_REMOVE, ctrlholtdel.token, kingfisherGroup.id)
+
+                expect(removedUser.status).toBe(SUCCESS_STATUS);
+                expect(removedUser.data.message).toBe(`${USER_TO_REMOVE} removed from group ${kingfisherGroup.id}`);
+
+                const { body: groupAfterUserRemoved } = await getGroups(ctrlholtdel.token)
+                const kingfisherGroupAfter = groupAfterUserRemoved.data.groups.find(group => group.name === GROUP_NAME)
+                expect(kingfisherGroupAfter.users).toHaveLength(kingfisherGroup.users.length - 1);
+            })
+
+            it('Can\'t remove users if not an admin (E2E)', async () => {
+                const newUser = 'newUserTest'
+                const newUserPW = "123"
+                await register(newUser, newUserPW)
+                const { body: newUserLogin } = await login(newUser, newUserPW)
+                await addUserToGroup(newUser, ctrlholtdel.token, kingfisherGroup.id)
+                
+                const { body: nonAdmin } = await removeUserFromGroup('ctrlholtdel', newUserLogin.data.token, "1", 400)
+                expect(nonAdmin.status).toBe(ERROR_STATUS);
+                expect(nonAdmin.message).toBe(restrictedError.message);
+            });
+        })
+
     });
 
 })
