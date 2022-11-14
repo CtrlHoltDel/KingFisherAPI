@@ -14,6 +14,9 @@ const { postLogin, postRegister } = require("./controllers/auth");
 const groupsRouter = require("./routes/groups");
 const playersRouter = require("./routes/players");
 const notesRouter = require("./routes/notes");
+const adminRouter = require("./routes/admin");
+const db = require("./db/connection");
+const { successMessage } = require("./utils/responses");
 
 const app = express();
 
@@ -23,12 +26,15 @@ const server = require("http").Server(app);
 
 app.use(validateToken)
 
+app.get('/ping', async (req, res) => res.send(successMessage({ message: "Server Up" })))
+
 app.post("/auth/register", postRegister)
 app.post("/auth/login", postLogin);
 
 app.use("/groups", groupsRouter)
 app.use("/players", playersRouter)
 app.use("/notes", notesRouter)
+app.use("/admin", adminRouter)
 
 app.use(handleCustomError);
 app.use(handlePSQLerror);

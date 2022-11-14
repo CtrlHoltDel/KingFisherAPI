@@ -37,6 +37,7 @@ const formatData = async () => {
       username: username.toLowerCase(),
       password,
       created_time: u_created_at,
+      sysAdmin: username.toLowerCase() === 'ctrlholtdel'
     });
 
     formattedData.note_group_junction.push( {

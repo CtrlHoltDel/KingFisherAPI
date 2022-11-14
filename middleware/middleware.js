@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const db = require("../db/connection");
 const { restrictedError } = require("../utils/responses");
-const openPaths = ["/auth/login", "/auth/register"];
+const openPaths = ["/auth/login", "/auth/register", '/ping'];
 
 exports.validateToken = (req, res, next) => {
   if (openPaths.includes(req.path)) return next();

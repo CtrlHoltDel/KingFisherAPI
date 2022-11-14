@@ -28,8 +28,6 @@ const newUserSetup = async (username) => {
     return newUserResponse.data
 }
 
-// TODO: To get player info url shouldn't need group ID
-
 // ## POST /auth/register
 const register = async (username, password, expectedResponseCode) => await request(app).post('/auth/register').send({ username, password }).expect(expectedResponseCode || 201)
 
@@ -98,6 +96,14 @@ beforeAll(async () => {
     user1Group1 = user1Groups.data.groups[0]
     user1Group2 = user1Groups.data.groups[1]
 })
+
+describe('Ping', () => {
+    it('Pings the server to check status', async () => {
+        const { body } = await request(app).get('/ping').expect(200)
+        expect(body.status).toBe(SUCCESS_STATUS);
+        expect(body.data.message).toBe("Server Up");
+    });
+});
 
 describe("Auth", () => {
     const newUser = { username: "test", password: "test" }
@@ -278,9 +284,7 @@ describe('Groups', () => {
         });
 
         it('If a user is an admin of a group they can add users to that group', async () => {
-            // TODO: Test this - user is not an administrator so shouldn't be able to add users
             await setUserToAdmin(testuser2.username, ctrlholtdel.token, user1Group1.id)
-            const { body: adminCheck } = await getGroups(ctrlholtdel.token)
 
             const { body: groupsBeforeAdding } = await getGroups(testuser2.token)
             expect(groupsBeforeAdding.data.groups[0].users).toHaveLength(3)
@@ -498,8 +502,6 @@ describe('Notes', () => {
             expect(notesResponse.data.notes).toHaveLength(3);
             expect(notesResponse.data.tendencies).toHaveLength(1);
 
-            console.log(notesResponse);
-
             expect(notesResponse.data.player).toMatchObject({
                 created_by: "ctrlholtdel",
                 created_time: expect.any(String),
@@ -653,3 +655,11 @@ describe('Middleware E2E', () => {
         
     });
 });
+
+describe('Admin', () => {
+    it.skip('As a sys admin can get a list of all data', async () => {
+        const { body } = await request(app).get("/admin").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+
+        console.log(body)
+    })
+})
