@@ -1,7 +1,7 @@
-const { getAdminGeneral } = require("../controllers/admin");
+const { getAdminUsers } = require("../controllers/admin");
 
 const adminRouter = require("express").Router();
 
-adminRouter.route('/').get(getAdminGeneral)
+adminRouter.route('/users').get(getAdminUsers)
 
 module.exports = adminRouter;

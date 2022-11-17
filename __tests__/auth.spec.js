@@ -141,6 +141,17 @@ describe("Auth", () => {
             const { body } = await request(app).post('/auth/login').send({ ...newUser, password: "Invalid Password" }).expect(403)
             expect(body.message).toBe('invalid credentials');
         });
+
+        it('Logging in as a sys admin returns correct credentials', async () => {
+            const { body: sysAdmin } = await login("ctrlholtdel", "test")
+            expect(sysAdmin.status).toBe(SUCCESS_STATUS);
+            expect(sysAdmin.data.sysadmin).toBeTruthy();
+
+            const { body: standardUser } = await login("testuser1", "test")
+            expect(standardUser.status).toBe(SUCCESS_STATUS);
+            expect(standardUser.data.sysadmin).not.toBeTruthy()
+
+        })
     });
 
     describe('Malformed/No Token', () => {
@@ -298,7 +309,7 @@ describe('Groups', () => {
             expect(groupsAfterAdding.data.groups[0].users.some(user => user.username === testuser3.username)).toBeTruthy()
         })
 
-        describe.only('Removing Users From Group', () => {
+        describe('Removing Users From Group', () => {
             const GROUP_NAME = 'kingfisher'
             const USER_TO_REMOVE = 'testuser2'
             let kingfisherGroup
@@ -696,9 +707,9 @@ describe('Middleware E2E', () => {
 });
 
 describe('Admin', () => {
-    it.skip('As a sys admin can get a list of all data', async () => {
-        const { body } = await request(app).get("/admin").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+    it('As a sys admin can get a list of all data', async () => {
+        const { body } = await request(app).get("/admin/users").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
 
-        console.log(body)
+        // console.log(body)
     })
 })

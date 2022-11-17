@@ -1,6 +1,6 @@
 const groupsRouter = require("express").Router();
 const { getGroups, postGroup, postJoinGroup, postHandleUserRequest } = require("../controllers/groups");
-const { groupValidation, groupValidationAdmin } = require("../middleware/middleware");
+const { groupValidationAdmin } = require("../middleware/middleware");
 
 groupsRouter.route('/').get(getGroups).post(postGroup);
 groupsRouter.route('/join').post(postJoinGroup)

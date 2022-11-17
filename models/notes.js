@@ -6,7 +6,7 @@ const NOTE_TYPE = 'note'
 const TENDENCY_TYPE = 'tendency'
 
 exports.fetchNotes = async (player_id) => {
-    const { rows: allTendenciesAndNotes } = await db.query(`SELECT note, created_time, created_by, type, id FROM notes WHERE player_id = $1 AND (notes.type = $2 OR notes.type = $3) ORDER BY created_time ASC`, [player_id, TENDENCY_TYPE, NOTE_TYPE]);
+    const { rows: allTendenciesAndNotes } = await db.query(`SELECT note, created_time, created_by, type, id FROM notes WHERE player_id = $1 AND (type = $2 OR type = $3) AND archived = $4 ORDER BY created_time ASC`, [player_id, TENDENCY_TYPE, NOTE_TYPE, false]);
     const { rows: player } = await db.query(`SELECT * FROM players WHERE id = $1`, [player_id])
     
     const notes = allTendenciesAndNotes.filter(note => note.type === NOTE_TYPE)
@@ -23,5 +23,5 @@ exports.postNote = async(username, player_id, note, type) => {
 }
 
 exports.removeNote = async(noteId) => {
-    await db.query(`DELETE FROM notes WHERE id = $1`, [noteId]);
+    await db.query(`UPDATE notes SET archived = $1 WHERE id = $2`, [true, noteId])
 }

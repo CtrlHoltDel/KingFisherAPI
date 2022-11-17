@@ -29,7 +29,7 @@ const formatData = async () => {
   };
 
   const userMap = {};
-  users.forEach(({ username, password, u_created_at, admin, validated }) => {
+  users.forEach(({ username, password, u_created_at, admin, validated, sysAdmin }) => {
     const userId = generateUUID();
     userMap[username] = userId;
     formattedData.users.push({
@@ -37,7 +37,7 @@ const formatData = async () => {
       username: username.toLowerCase(),
       password,
       created_time: u_created_at,
-      sysAdmin: username.toLowerCase() === 'ctrlholtdel'
+      sysAdmin: sysAdmin || false
     });
 
     formattedData.note_group_junction.push( {
@@ -49,6 +49,8 @@ const formatData = async () => {
         note_group: noteGroupId 
     })
   });
+
+  console.log(users)
 
   const playersMap = {}
   players.forEach(({ player_name, type, p_created_at, p_created_by }) => {

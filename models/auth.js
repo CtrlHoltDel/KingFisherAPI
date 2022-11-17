@@ -22,12 +22,14 @@ exports.handleLogin = async (username, password) => {
 
     if (!validPassword) return Promise.reject({ status: 403, message: "invalid credentials" });
 
+    const jwtBody = rows[0].sysadmin ? { username: rows[0].username, sysadmin: true } : { username: rows[0].username }
+
     const token = jwt.sign(
-      { username: rows[0].username },
+      jwtBody,
       process.env.JWT_SECRET
     );
 
-    return { token, username: rows[0].username };
+    return { token, ...jwtBody };
 };
 
 exports.handleRegister = async (username, password) => {

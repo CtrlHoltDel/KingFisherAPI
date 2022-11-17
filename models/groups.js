@@ -140,7 +140,6 @@ exports.handleUserRequest = async (action, group_id, username) => {
   }
 
   if(action.toLowerCase() === 'remove'){
-    console.log(group_id, username)
     await db.query(`DELETE FROM note_group_junction WHERE username = $1 AND note_group = $2`, [username, group_id])
     return { status: 202, message: `${username} removed from group ${group_id}`}
   }

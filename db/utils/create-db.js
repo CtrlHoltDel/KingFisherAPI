@@ -1,16 +1,16 @@
+const { TABLES_NAMES, USERS_TABLE, PLAYERS_TABLE, NOTE_GROUP_TABLE, NOTES_TABLE, NOTE_GROUP_JUNCTION_TABLE } = require("../../utils/constants");
 const db = require("../connection");
 
-const TABLES_NAMES = ["users" ,"notes", "players", "note_group", "note_group_junction"];
-
 const createTables = async () => {
-  const users = `CREATE TABLE users(
+  const users = `CREATE TABLE ${USERS_TABLE}(
       id VARCHAR PRIMARY KEY,
       username VARCHAR NOT NULL UNIQUE, 
       password VARCHAR NOT NULL,
-      created_time TIMESTAMP DEFAULT NOW()
+      created_time TIMESTAMP DEFAULT NOW(),
+      sysAdmin BOOLEAN DEFAULT FALSE
   )`;
 
-  const players = `CREATE TABLE players (
+  const players = `CREATE TABLE ${PLAYERS_TABLE} (
         id VARCHAR PRIMARY KEY,
         name VARCHAR(255),
         type VARCHAR,
@@ -20,23 +20,24 @@ const createTables = async () => {
         UNIQUE (note_group_id, name)
   );`;
 
-  const noteGroup = `CREATE TABLE note_group (
+  const noteGroup = `CREATE TABLE ${NOTE_GROUP_TABLE} (
         id VARCHAR PRIMARY KEY,
         name VARCHAR NOT NULL,
         created_time TIMESTAMP DEFAULT NOW(),
         created_by VARCHAR REFERENCES users(username)
     );`;
 
-  const notes = `CREATE TABLE notes(
+  const notes = `CREATE TABLE ${NOTES_TABLE}(
         id VARCHAR PRIMARY KEY,
         created_by VARCHAR(255) REFERENCES users(username),
         created_time TIMESTAMP DEFAULT NOW(),
         note VARCHAR,
         player_id VARCHAR REFERENCES players(id), 
-        type VARCHAR
+        type VARCHAR,
+        archived BOOLEAN DEFAULT FALSE
   );`;
 
-  const noteGroupJunction = `CREATE TABLE note_group_junction (
+  const noteGroupJunction = `CREATE TABLE ${NOTE_GROUP_JUNCTION_TABLE} (
         id VARCHAR PRIMARY KEY,
         username VARCHAR REFERENCES users(username) NOT NULL,
         note_group VARCHAR NOT NULL REFERENCES note_group(id),
