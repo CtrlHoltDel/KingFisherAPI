@@ -7,6 +7,7 @@ const USERS_TABLE = 'users'
 
 exports.fetchAdminUsers = async () => {
     const users = await getFullList(USERS_TABLE);
+    return { users }
 }
 
 const getCount = async (tableName) => {

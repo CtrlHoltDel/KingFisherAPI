@@ -77,6 +77,7 @@ let testuser2;
 let testuser3;
 let user1Group1;
 let user1Group2;
+let ferretGroup;
 
 
 beforeAll(async () => {
@@ -96,6 +97,11 @@ beforeAll(async () => {
 
     user1Group1 = user1Groups.data.groups[0]
     user1Group2 = user1Groups.data.groups[1]
+
+    const { body: testUser1Groups } = await getGroups(testuser1.token)
+
+    ferretGroup = testUser1Groups.data.groups[1]
+    
 })
 
 describe('Ping', () => {
@@ -706,10 +712,21 @@ describe('Middleware E2E', () => {
     });
 });
 
-describe('Admin', () => {
-    it('As a sys admin can get a list of all data', async () => {
-        const { body } = await request(app).get("/admin/users").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+describe.only('Admin', () => {
+    it('As a sys admin can get a list of all users', async () => {
+        const { body: adminUsers } = await request(app).get("/admin/users").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+        expect(adminUsers.status).toBe(SUCCESS_STATUS);
+        expect(adminUsers.data.users).toHaveLength(4);
 
-        // console.log(body)
+        await register('new-user', '123')
+
+        const { body: adminUsersAfterAdded } = await request(app).get("/admin/users").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+        expect(adminUsersAfterAdded.status).toBe(SUCCESS_STATUS);
+        expect(adminUsersAfterAdded.data.users).toHaveLength(5);
+    })
+
+    it('Non-sys admins can\'t access admin endpoint', async () => {
+        const { body: nonSysAdmin } = await request(app).get("/admin/users").set(AUTHORIZATION_HEADER, `Bearer ${testuser1.token}`).expect(400)
+        console.log(nonSysAdmin)
     })
 })

@@ -3,9 +3,8 @@ const { successMessage } = require("../utils/responses");
 
 exports.getAdminUsers = async (req, res, next) => {
   try {
-    const response = await fetchAdminUsers();
-    console.log(successMessage({ message: "Wonderful" }))
-    res.send({ status: successMessage })
+    const { users } = await fetchAdminUsers();
+    res.send(successMessage({ users }))
   } catch (error) {
     next(error);
   }

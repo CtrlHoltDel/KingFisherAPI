@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const db = require("../db/connection");
 const { restrictedError } = require("../utils/responses");
-const openPaths = ["/auth/login", "/auth/register", '/ping'];
+const openPaths = ["/auth/login", "/auth/register", "/ping"];
 
 exports.validateToken = (req, res, next) => {
   if (openPaths.includes(req.path)) return next();
@@ -12,7 +12,7 @@ exports.validateToken = (req, res, next) => {
 
   try {
     const user = jwt.verify(bearerHeader.split(" ")[1], process.env.JWT_SECRET);
-
+    
     req.user = user;
     next();
   } catch (error) {
@@ -125,7 +125,18 @@ exports.groupValidationAdmin = async (req, res, next) => {
 };
 
 // Only can access if owner of the group
-exports.groupValidationOnlyOwner = async (req, res, next) => {};
+exports.validationSysAdmin = async (req, res, next) => {
+  const { username } = req.user;
+
+  const { rows: user } = await db.query(
+    `SELECT sysadmin FROM users WHERE username = $1`,
+    [username]
+  );
+
+  if (!user[0].sysadmin) return res.status(400).send(restrictedError);
+
+  next();
+};
 
 const checkJunctionTable = async (username, groupId) => {
   const { rows } = await db.query(

@@ -1,6 +1,6 @@
 const ENV = process.env.NODE_ENV || "development";
 
-const { validateToken } = require("./middleware/middleware");
+const { validateToken, validationSysAdmin } = require("./middleware/middleware");
 
 require("dotenv").config({
   path: `${__dirname}/.env.${ENV}`,
@@ -34,7 +34,7 @@ app.post("/auth/login", postLogin);
 app.use("/groups", groupsRouter)
 app.use("/players", playersRouter)
 app.use("/notes", notesRouter)
-app.use("/admin", adminRouter)
+app.use("/admin", validationSysAdmin, adminRouter)
 
 app.use(handleCustomError);
 app.use(handlePSQLerror);
