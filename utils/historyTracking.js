@@ -2,15 +2,16 @@ const db = require("../db/connection");
 const generateUUID = require("./UUID");
 
 // Types
-const NOTE_GROUP = "note group";
+const NOTE_GROUP = "group";
 const PLAYER = "player";
+const AUTH = "auth";
+const NOTE_TYPE = 'note'
 
 //Action
-const AUTH = "auth";
 const CREATE = "create";
 const ARCHIVE = "archive";
+const UPDATE = "update";
 const ADD = "add";
-const UPDATE = "update"
 
 // Auth
 exports.trackRegister = async (user) => {
@@ -32,13 +33,14 @@ exports.trackArchiveNote = async (
   await db.query(
     `INSERT INTO history(id, type, username, player_id, note, action, detail, note_id) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
     [
-      generateUUID(), type,
+      generateUUID(),
+      NOTE_TYPE,
       userWhoArchived,
       relatedPlayer,
       note,
       ARCHIVE,
       `${userWhoArchived} deleted ${type} ${note} from player ${relatedPlayer}`,
-      noteId
+      noteId,
     ]
   );
 };
@@ -46,7 +48,16 @@ exports.trackArchiveNote = async (
 exports.trackAddNote = async (type, username, playerId, note, noteId) => {
   await db.query(
     `INSERT INTO history(id, type, username, player_id, note, detail, action, note_id) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
-    [generateUUID(), type, username, playerId, note, `${username} added ${type} ${note}`, ADD, noteId]
+    [
+      generateUUID(),
+      NOTE_TYPE,
+      username,
+      playerId,
+      note,
+      `${username} added ${type} ${note}`,
+      ADD,
+      noteId,
+    ]
   );
 };
 
@@ -55,7 +66,8 @@ exports.trackNewGroup = async (groupId, username) => {
   await db.query(
     `INSERT INTO history(id, type, username, note_group, action, detail) VALUES($1, $2, $3, $4, $5, $6)`,
     [
-      generateUUID(), NOTE_GROUP,
+      generateUUID(),
+      NOTE_GROUP,
       username,
       groupId,
       CREATE,
@@ -67,7 +79,14 @@ exports.trackNewGroup = async (groupId, username) => {
 exports.trackAddedUserToGroup = async (groupId, username, addedUser) => {
   await db.query(
     `INSERT INTO history(id, type, username, note_group, action, detail) VALUES($1, $2, $3, $4, $5, $6)`,
-    [generateUUID(), NOTE_GROUP, username, groupId, ADD, `${addedUser} added to group`]
+    [
+      generateUUID(),
+      NOTE_GROUP,
+      username,
+      groupId,
+      ADD,
+      `${addedUser} added to group`,
+    ]
   );
 };
 
@@ -81,7 +100,8 @@ exports.trackAddNewPlayer = async (
   await db.query(
     `INSERT INTO history (id, type, username, note_group, action, player_id, detail) VALUES($1, $2, $3, $4, $5, $6, $7)`,
     [
-      generateUUID(), PLAYER,
+      generateUUID(),
+      PLAYER,
       username,
       noteGroupId,
       CREATE,
@@ -91,11 +111,16 @@ exports.trackAddNewPlayer = async (
   );
 };
 
-
-exports.trackChangePlayerType = async (
-    username,
-    playerId,
-    newType,
-) => {
-    await db.query(`INSERT INTO history (id, type, username, action, player_id, detail) VALUES($1, $2, $3, $4, $5, $6)`, [generateUUID(), PLAYER, username, UPDATE, playerId, `${username} updated ${playerId} to type ${newType}`])
-}
+exports.trackChangePlayerType = async (username, playerId, newType) => {
+  await db.query(
+    `INSERT INTO history (id, type, username, action, player_id, detail) VALUES($1, $2, $3, $4, $5, $6)`,
+    [
+      generateUUID(),
+      PLAYER,
+      username,
+      UPDATE,
+      playerId,
+      `${username} updated ${playerId} to type ${newType}`,
+    ]
+  );
+};

@@ -12,8 +12,10 @@ exports.getUsers = async (req, res, next) => {
 
 
 exports.getHistory = async (req, res, next) => {
+  const { type, action } = req.query
+
   try {
-    const history = await fetchHistory()
+    const history = await fetchHistory(type, action)
     res.send(successMessage({ history }))
   } catch (error) {
     next(error)

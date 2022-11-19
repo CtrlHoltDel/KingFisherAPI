@@ -738,49 +738,67 @@ describe('Admin', () => {
         expect(nonSysAdmin.status).toBe(ERROR_STATUS);
     })
 
-    describe('history && E2E', () => {
-        it('Can pull down history with E2E', async () => {
+    describe.only('history && E2E', () => {
+
+        beforeEach(async () => {
             const newUser = { username: 'new-user', password: "123" }
             const newPlayerName = 'newly-added-player'
             const newGroupName = 'new group'
             const newNote = { note: "New Note", type: "note" }
             const newTendency = { note: "New Tendency", type: "tendency" }
-
+    
             // Adding some register/login history
             await register(newUser.username, newUser.password);
             const { body: { data: newUserLogin } } = await login(newUser.username, newUser.password)
-
+    
             // Creating a new group
             const { body: { data } } = await addGroup(newGroupName, ctrlholtdel.token, 201);
             const newlyAddedGroup = data.addedGroup
-
+    
             // Adding a User to group
             await addUserToGroup(newUser.username, ctrlholtdel.token, newlyAddedGroup.id)
-
+    
             // Adding a player
             const { body: { data: { addedPlayer: newlyAddedPlayer } } } = await addPlayer(newlyAddedGroup.id, newUserLogin.token, newPlayerName)
-
+    
             // Adding a note
             const{ body: { data: { addedNote }} } = await addNote(newlyAddedPlayer.id, newUserLogin.token, newNote)
-
+    
             // Archiving a note
             await archiveNote(ctrlholtdel.token, addedNote.id)
-
+    
             // Adding a tendency
             const { body: { data: { addedNote: addedTendency }}} = await addNote(newlyAddedPlayer.id, newUserLogin.token, newTendency)
-
+    
             // Archiving a tendency
             await archiveNote(newUserLogin.token, addedTendency.id)
-
+    
             // Changing a player type
             await updatePlayerType(newlyAddedPlayer.id, newlyAddedGroup.id, 'Fish', newUserLogin.token);
-            
 
+        })
 
+        it('Can pull down history with E2E', async () => {
             const { body: allHistory } = await request(app).get("/admin/history").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
             expect(allHistory.status).toBe(SUCCESS_STATUS);
             expect(allHistory.data.history).toHaveLength(9);
-
         });
+
+        it('Can filter by different types', async () => {
+            const { body: playerHistory } = await request(app).get("/admin/history?type=player").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+            expect(playerHistory.data.history.every(historyRecord => historyRecord.type === 'player')).toBeTruthy();
+
+            const { body: groupHistory } = await request(app).get("/admin/history?type=group").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+            expect(groupHistory.data.history.every(historyRecord => historyRecord.type === 'group')).toBeTruthy();
+
+            const { body: groupHistoryCreate } = await request(app).get("/admin/history?type=group&action=create").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+            expect(groupHistoryCreate.data.history.every(historyRecord => (historyRecord.type === 'group' && historyRecord.action === 'create'))).toBeTruthy();
+
+            const { body: notesHistory } = await request(app).get("/admin/history?type=note").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+            expect(notesHistory.data.history.every(historyRecord => historyRecord.type === 'note')).toBeTruthy();
+
+            const { body: notesHistoryDeleted } = await request(app).get("/admin/history?type=note&action=archive").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+            expect(notesHistoryDeleted.data.history.every(historyRecord => historyRecord.type === 'note' && historyRecord.action === 'archive')).toBeTruthy();
+        })
     });
 })

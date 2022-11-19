@@ -38,6 +38,7 @@ exports.fetchGroups = async (username) => {
 };
 
 exports.insertGroup = async (username, name) => {
+  console.log("here 1")
   if (!name || name.length <= 3)
     return Promise.reject({
       status: 401,
@@ -69,7 +70,11 @@ exports.insertGroup = async (username, name) => {
       [groupId, true, true, username, generateUUID()]
     );
 
+    console.log("here2")
+
     await trackNewGroup(groupId, username)
+
+    console.log("here3")
 
     return { name: rows[0].name, created_time: rows[0].created_time, id: rows[0].id, created_by: username };
   } catch (err) {
