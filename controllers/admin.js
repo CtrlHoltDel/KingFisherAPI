@@ -23,7 +23,7 @@ exports.getHistory = async (req, res, next) => {
 exports.createBackup = async(req, res , next) => {
   try {
     await generateBackup()
-    res.download(`${__dirname.slice(0, -12)}/backup/backup.json`)
+    res.sendFile(`${__dirname.slice(0, -12)}/backup/backup.json`)
   } catch (error) {
     next(error)
   }
