@@ -4,4 +4,3 @@ node_modules
 old-data.json
 seed-data.json
 formatted-data.json
-backup/*
