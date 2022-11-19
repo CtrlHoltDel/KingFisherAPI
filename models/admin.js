@@ -24,7 +24,7 @@ exports.generateBackup = async () => {
     }
 
     await writeFile(
-        `${__dirname.slice(0, -7)}/backup/backup.txt`,
+        `${__dirname.slice(0, -7)}/backup/backup.json`,
         JSON.stringify(backup)
     );
 }
