@@ -1,6 +1,6 @@
 const format = require("pg-format");
 const db = require("../db/connection");
-const { TABLES_NAMES } = require("../utils/constants");
+const { TABLES_NAMES, HISTORY_TABLE } = require("../utils/constants");
 const USERS_TABLE = 'users'
 const { writeFile } = require("fs/promises");
 
@@ -19,6 +19,7 @@ exports.generateBackup = async () => {
 
     for (let i = 0; i < TABLES_NAMES.length; i++) {
         const tableName = TABLES_NAMES[i]
+        if(tableName === HISTORY_TABLE) continue
         const fullTable = await getFullList(tableName)
         backup[tableName] = fullTable;
     }

@@ -49,7 +49,7 @@ const createTables = async () => {
   );`;
 
   const history = `CREATE TABLE ${HISTORY_TABLE} (
-    id SERIAL PRIMARY KEY,
+    id VARCHAR PRIMARY KEY,
     type VARCHAR,
     action VARCHAR,
     username VARCHAR REFERENCES users(username),
