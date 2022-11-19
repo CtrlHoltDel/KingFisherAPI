@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { trackNewGroup, trackAddedUserToGroup } = require("../utils/historyTracking");
 const generateUUID = require("../utils/UUID");
 
 exports.fetchGroups = async (username) => {
@@ -68,6 +69,8 @@ exports.insertGroup = async (username, name) => {
       [groupId, true, true, username, generateUUID()]
     );
 
+    await trackNewGroup(groupId, username)
+
     return { name: rows[0].name, created_time: rows[0].created_time, id: rows[0].id, created_by: username };
   } catch (err) {
     return Promise.reject({ status: 404, message: err });
@@ -116,7 +119,7 @@ exports.requestGroupJoin = async (groupId, username) => {
   }
 };
 
-exports.handleUserRequest = async (action, group_id, username) => {
+exports.handleUserRequest = async (action, group_id, username, currentUser) => {
   if(!username) return Promise.reject({ status: 400, message: "Cannot Process Request" })
 
   username = username.toLowerCase()
@@ -127,10 +130,15 @@ exports.handleUserRequest = async (action, group_id, username) => {
     if(alreadyExistsCheck.length){
       if(alreadyExistsCheck[0]?.validated || alreadyExistsCheck[0]?.admin) return `${username} already in group`
       await db.query(`UPDATE note_group_junction SET validated = $1 WHERE note_group = $2 AND username = $3`, [true, group_id, username])
+      await trackAddedUserToGroup(group_id, currentUser, username)
+
       return { message: `${username} added` }
     }    
     
     await db.query(`INSERT INTO note_group_junction (id, username, note_group, validated) VALUES ($1, $2, $3, $4)`, [generateUUID(), username, group_id, true]);
+
+
+    await trackAddedUserToGroup(group_id, currentUser, username)  
     return { message: `${username} added` }
   } 
 

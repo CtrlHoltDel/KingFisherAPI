@@ -27,9 +27,10 @@ exports.addNote = async (req, res, next) => {
 
 exports.delNote = async (req, res, next) => {
     const { note_id } = req.params
+    const { username } = req.user
 
     try {
-        await removeNote(note_id)
+        await removeNote(username, note_id)
         res.send(successMessage({ message: `Note ${note_id} deleted`}))
     } catch (error) {
         console.log(error)

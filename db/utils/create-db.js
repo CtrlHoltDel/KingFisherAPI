@@ -1,4 +1,4 @@
-const { TABLES_NAMES, USERS_TABLE, PLAYERS_TABLE, NOTE_GROUP_TABLE, NOTES_TABLE, NOTE_GROUP_JUNCTION_TABLE } = require("../../utils/constants");
+const { TABLES_NAMES, USERS_TABLE, PLAYERS_TABLE, NOTE_GROUP_TABLE, NOTES_TABLE, NOTE_GROUP_JUNCTION_TABLE, HISTORY_TABLE } = require("../../utils/constants");
 const db = require("../connection");
 
 const createTables = async () => {
@@ -48,11 +48,25 @@ const createTables = async () => {
         UNIQUE(note_group, username)
   );`;
 
+  const history = `CREATE TABLE ${HISTORY_TABLE} (
+    id SERIAL PRIMARY KEY,
+    type VARCHAR,
+    action VARCHAR,
+    username VARCHAR REFERENCES users(username),
+    note_group VARCHAR REFERENCES note_group(id),
+    note VARCHAR,
+    time_stamp TIMESTAMP DEFAULT NOW(),
+    detail VARCHAR,
+    player_id VARCHAR,
+    note_id VARCHAR
+  );`;
+
   await db.query(users);
   await db.query(noteGroup);
   await db.query(players);
   await db.query(notes);
   await db.query(noteGroupJunction);
+  await db.query(history);
 };
 
 const dropTables = async () => {

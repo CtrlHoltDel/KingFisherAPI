@@ -39,11 +39,17 @@ const getPlayersList = async (groupId, token, expectedResponseCode, limit, searc
 
 // ## POST /players/:group_id
 const addPlayer = async (groupId, token, newPlayerName, expectedResponseCode) => await request(app).post(`/players/${groupId}`).send({ playerName: newPlayerName }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
+
+// ## PUT /players/groupId/playerId
+const updatePlayerType = async (playerId, groupId, type, token) => await request(app).put(`/players/${groupId}/${playerId}`).send({ type }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(201)
+
 // ## GET /notes/:player_id
 const getNotes = async (playerId, token, expectedResponseCode) => await request(app).get(`/notes/${playerId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
 
+
 // ## POST /notes/:player_id
 const addNote = async (playerId, token, noteBody, expectedResponseCode) => await request(app).post(`/notes/${playerId}`).send(noteBody).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
+const archiveNote = async(token, noteId, expectedResponseCode) => await request(app).delete(`/notes/${noteId}`).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 200)
 
 // ## POST /groups/handle-request/:group_id?username=username
 const addUserToGroup = async (usernameToAdd, token, groupId, expectedResponseCode) => await request(app).post(`/groups/handle-request/${groupId}?username=${usernameToAdd}`).send({ action: "add" }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
@@ -55,6 +61,8 @@ const getGroups = async (token, expectedResponseCode) => await request(app).get(
 
 // ## POST /groups
 const addGroup = async(name, token, expectedResponseCode) => await request(app).post('/groups').send({ name }).set(AUTHORIZATION_HEADER, `Bearer ${token}`).expect(expectedResponseCode || 201)
+
+
 
 /*
 
@@ -641,7 +649,7 @@ describe('Notes', () => {
         })
         
         it('Can Delete Notes', async () => {
-            const { body: deletedNote } = await request(app).delete(`/notes/${noteIdToDelete}`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+            const { body: deletedNote } = await archiveNote(ctrlholtdel.token, noteIdToDelete)
 
             expect(deletedNote.status).toBe(SUCCESS_STATUS);
             expect(deletedNote.data.message).toBe(`Note ${noteIdToDelete} deleted`);
@@ -654,7 +662,7 @@ describe('Notes', () => {
             const { body: notes } = await getNotes(PLAYER_ID, testuser1.token, 400)
             expect(notes.status).toBe(ERROR_STATUS);
 
-            const { body: notesAfterUnvalidatedDelete } = await request(app).delete(`/notes/${noteIdToDelete}`).set(AUTHORIZATION_HEADER, `Bearer ${testuser1.token}`).expect(400)
+            const { body: notesAfterUnvalidatedDelete } = await archiveNote(testuser1.token, noteIdToDelete, 400)
             expect(notesAfterUnvalidatedDelete.status).toBe(ERROR_STATUS);
         });
     });
@@ -712,7 +720,7 @@ describe('Middleware E2E', () => {
     });
 });
 
-describe.only('Admin', () => {
+describe('Admin', () => {
     it('As a sys admin can get a list of all users', async () => {
         const { body: adminUsers } = await request(app).get("/admin/users").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
         expect(adminUsers.status).toBe(SUCCESS_STATUS);
@@ -727,6 +735,52 @@ describe.only('Admin', () => {
 
     it('Non-sys admins can\'t access admin endpoint', async () => {
         const { body: nonSysAdmin } = await request(app).get("/admin/users").set(AUTHORIZATION_HEADER, `Bearer ${testuser1.token}`).expect(400)
-        console.log(nonSysAdmin)
+        expect(nonSysAdmin.status).toBe(ERROR_STATUS);
     })
+
+    describe('history && E2E', () => {
+        it('Can pull down history with E2E', async () => {
+            const newUser = { username: 'new-user', password: "123" }
+            const newPlayerName = 'newly-added-player'
+            const newGroupName = 'new group'
+            const newNote = { note: "New Note", type: "note" }
+            const newTendency = { note: "New Tendency", type: "tendency" }
+
+            // Adding some register/login history
+            await register(newUser.username, newUser.password);
+            const { body: { data: newUserLogin } } = await login(newUser.username, newUser.password)
+
+            // Creating a new group
+            const { body: { data } } = await addGroup(newGroupName, ctrlholtdel.token, 201);
+            const newlyAddedGroup = data.addedGroup
+
+            // Adding a User to group
+            await addUserToGroup(newUser.username, ctrlholtdel.token, newlyAddedGroup.id)
+
+            // Adding a player
+            const { body: { data: { addedPlayer: newlyAddedPlayer } } } = await addPlayer(newlyAddedGroup.id, newUserLogin.token, newPlayerName)
+
+            // Adding a note
+            const{ body: { data: { addedNote }} } = await addNote(newlyAddedPlayer.id, newUserLogin.token, newNote)
+
+            // Archiving a note
+            await archiveNote(ctrlholtdel.token, addedNote.id)
+
+            // Adding a tendency
+            const { body: { data: { addedNote: addedTendency }}} = await addNote(newlyAddedPlayer.id, newUserLogin.token, newTendency)
+
+            // Archiving a tendency
+            await archiveNote(newUserLogin.token, addedTendency.id)
+
+            // Changing a player type
+            await updatePlayerType(newlyAddedPlayer.id, newlyAddedGroup.id, 'Fish', newUserLogin.token);
+            
+
+
+            const { body: allHistory } = await request(app).get("/admin/history").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+            expect(allHistory.status).toBe(SUCCESS_STATUS);
+            expect(allHistory.data.history).toHaveLength(9);
+
+        });
+    });
 })

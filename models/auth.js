@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../db/connection");
+const { trackRegister } = require("../utils/historyTracking");
 const generateUUID = require("../utils/UUID");
 
 exports.handleLogin = async (username, password) => {
@@ -66,6 +67,10 @@ exports.handleRegister = async (username, password) => {
     `INSERT INTO users (id, username, password) VALUES ($1, $2, $3) RETURNING username, created_time`,
     [generateUUID(), username, hashedPassword]
   );
+
+  await trackRegister(addedUser)
+
+
 
   return addedUser[0];
 

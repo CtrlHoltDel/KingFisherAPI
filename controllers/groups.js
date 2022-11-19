@@ -41,7 +41,7 @@ exports.postHandleUserRequest = async (req, res, next) => {
     const { group_id } = req.params
     const { username } = req.query
     try {
-        const { status, message } = await handleUserRequest(action, group_id, username)
+        const { status, message } = await handleUserRequest(action, group_id, username, req.user.username)
         res.status(status || 201).send(successMessage({ message }))
     } catch (err) {
         next(err)

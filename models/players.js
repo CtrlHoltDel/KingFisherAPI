@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { trackAddNewPlayer, trackChangePlayerType } = require("../utils/historyTracking");
 const generateUUID = require("../utils/UUID");
 
 const NOTE_TYPE = 'note'
@@ -43,6 +44,8 @@ exports.addPlayer = async (username, noteGroupId, newPlayerName) => {
     [generateUUID(), newPlayerName, username, noteGroupId]
   );
 
+  await trackAddNewPlayer(username, noteGroupId, newPlayer[0].id, newPlayerName)
+
   return { ...newPlayer[0], name: decodeURIComponent(newPlayer[0].name) };
 };
 
@@ -51,6 +54,8 @@ exports.amendPlayer = async (username, group_id, player_id, body) => {
   const { rows } = await db.query(`UPDATE players SET type = $1 WHERE note_group_id = $2 AND id = $3 RETURNING *`, [type, group_id, player_id])
 
   if(!rows.length) return Promise.reject({ status: 400, message: "Player doesn't exist" })
+
+  trackChangePlayerType(username, player_id, type)
 
   return rows[0]
 }

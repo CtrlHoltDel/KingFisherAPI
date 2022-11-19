@@ -1,13 +1,17 @@
 const format = require("pg-format");
 const db = require("../db/connection");
-const { TABLES_NAMES } = require("../utils/constants");
+const { HISTORY_TABLE } = require("../utils/constants");
 
-const TABLES = []
 const USERS_TABLE = 'users'
 
 exports.fetchAdminUsers = async () => {
     const users = await getFullList(USERS_TABLE);
-    return { users }
+    return users
+}
+
+exports.fetchHistory = async () => {
+    const { rows: history } = await db.query(`SELECT * FROM history`)
+    return history
 }
 
 const getCount = async (tableName) => {
