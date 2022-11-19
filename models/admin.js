@@ -37,8 +37,6 @@ exports.fetchHistory = async (type, action, order = 'DESC') => {
 
     const completeQuery = baseQuery + filters + orderby
 
-    console.log(completeQuery, filterArray)
-
     const { rows: history } = await db.query(completeQuery, filterArray)
     return history
 }

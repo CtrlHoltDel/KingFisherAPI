@@ -33,7 +33,6 @@ exports.delNote = async (req, res, next) => {
         await removeNote(username, note_id)
         res.send(successMessage({ message: `Note ${note_id} deleted`}))
     } catch (error) {
-        console.log(error)
         next(error)
     }
 
