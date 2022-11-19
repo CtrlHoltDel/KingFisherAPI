@@ -1,7 +1,7 @@
-const { fetchAdminUsers, fetchHistory } = require("../models/admin");
+const { fetchAdminUsers, fetchHistory, generateBackup } = require("../models/admin");
 const { successMessage } = require("../utils/responses");
 
-exports.getAdminUsers = async (req, res, next) => {
+exports.getUsers = async (req, res, next) => {
   try {
     const users = await fetchAdminUsers();
     res.send(successMessage({ users }))
@@ -12,6 +12,19 @@ exports.getAdminUsers = async (req, res, next) => {
 
 
 exports.getHistory = async (req, res, next) => {
-  const history = await fetchHistory()
-  res.send(successMessage({ history }))
+  try {
+    const history = await fetchHistory()
+    res.send(successMessage({ history }))
+  } catch (error) {
+    next(error)
+  }
+}
+
+exports.createBackup = async(req, res , next) => {
+  try {
+    await generateBackup()
+    res.sendFile(`${__dirname.slice(0, -12)}/backup/backup.json`)
+  } catch (error) {
+    next(error)
+  }
 }
