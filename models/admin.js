@@ -21,7 +21,7 @@ exports.fetchHistory = async (type, action, order = 'DESC', limit = 20, offset =
     if((order.toUpperCase() !== 'DESC' && order.toUpperCase() !== 'ASC')) return promiseReject()
 
     if(/\D/.test(limit) || /\D/.test(offset) || offset % 1 !== 0 || limit % 1 !== 0) return promiseReject()
-    
+
     if(limit > 100) limit = 100
 
     const baseQuery = `SELECT * FROM history`
@@ -59,6 +59,14 @@ exports.generateBackup = async () => {
 
     await writeFile(
         `${__dirname.slice(0, -7)}/backup/backup.json`,
+        JSON.stringify(backup)
+    );
+}
+
+exports.generateHistoryBackup = async () => {
+    const history = await getFullList(HISTORY_TABLE);
+    await writeFile(
+        `${__dirname.slice(0, -7)}/backup/history.json`,
         JSON.stringify(backup)
     );
 }

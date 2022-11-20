@@ -9,14 +9,15 @@ const insertData = async ({
   note_group,
   note_group_junction,
 }) => {
+
   const usersQuery = format(
     `INSERT INTO ${USERS_TABLE}(id, username, password, created_time, sysAdmin) VALUES %L`,
-    users.map(({ id, username, password, created_time, sysAdmin }) => [
+    users.map(({ id, username, password, created_time, sysadmin }) => [
       id,
       username,
       password,
       created_time,
-      sysAdmin || false
+      sysadmin
     ])
   );
 

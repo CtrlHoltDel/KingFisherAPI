@@ -5,5 +5,6 @@ exports.PLAYERS_TABLE = 'players'
 exports.NOTE_GROUP_TABLE = 'note_group'
 exports.NOTE_GROUP_JUNCTION_TABLE = 'note_group_junction'
 exports.HISTORY_TABLE = 'history'
+exports.USER_CONFIG = 'user_config'
 
-exports.TABLES_NAMES = ["users" ,"notes", "players", "note_group", "note_group_junction", "history"];
+exports.TABLES_NAMES = ["users" ,"notes", "players", "note_group", "note_group_junction", "history", "user_config"];

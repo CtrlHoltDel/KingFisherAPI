@@ -54,7 +54,7 @@ exports.trackAddNote = async (type, username, playerId, note, noteId) => {
       username,
       playerId,
       note,
-      `${username} added ${type} ${note}`,
+      `${username} added ${type} ${note} to player ${playerId}`,
       ADD,
       noteId,
     ]
@@ -62,7 +62,7 @@ exports.trackAddNote = async (type, username, playerId, note, noteId) => {
 };
 
 // GROUPS
-exports.trackNewGroup = async (groupId, username) => {
+exports.trackNewGroup = async (groupId, username, name) => {
   await db.query(
     `INSERT INTO history(id, type, username, note_group, action, detail) VALUES($1, $2, $3, $4, $5, $6)`,
     [
@@ -71,7 +71,7 @@ exports.trackNewGroup = async (groupId, username) => {
       username,
       groupId,
       CREATE,
-      `${username} created note group ${groupId}`,
+      `${username} created note group ${name}`,
     ]
   );
 };

@@ -69,7 +69,7 @@ exports.insertGroup = async (username, name) => {
       [groupId, true, true, username, generateUUID()]
     );
 
-    await trackNewGroup(groupId, username)
+    await trackNewGroup(groupId, username, name)
 
     return { name: rows[0].name, created_time: rows[0].created_time, id: rows[0].id, created_by: username };
   } catch (err) {
