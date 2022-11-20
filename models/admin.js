@@ -11,12 +11,18 @@ exports.fetchAdminUsers = async () => {
     return users
 }
 
+const promiseReject = () => Promise.reject({ status: 400, message: 'Cannot Process Request' })
+
 const HISTORY_TYPES = ['note', 'tendency', 'auth', 'group', 'player']
 const ACTION_TYPES = ['add', 'update', 'archive', 'create']
-exports.fetchHistory = async (type, action, order = 'DESC') => {
-    if(type && !HISTORY_TYPES.includes(type)) return Promise.reject({ status: 400, message: 'Cannot Process Request' })
-    if(action && !ACTION_TYPES.includes(action)) return Promise.reject({ status: 400, message: 'Cannot Process Request' })
-    if((order.toUpperCase() !== 'DESC' && order.toUpperCase() !== 'ASC')) return Promise.reject({ status: 400, message: 'Cannot Process Request' })
+exports.fetchHistory = async (type, action, order = 'DESC', limit = 20, offset = 0) => {
+    if(type && !HISTORY_TYPES.includes(type)) return promiseReject()
+    if(action && !ACTION_TYPES.includes(action)) return promiseReject()
+    if((order.toUpperCase() !== 'DESC' && order.toUpperCase() !== 'ASC')) return promiseReject()
+
+    if(/\D/.test(limit) || /\D/.test(offset) || offset % 1 !== 0 || limit % 1 !== 0) return promiseReject()
+    
+    if(limit > 100) limit = 100
 
     const baseQuery = `SELECT * FROM history`
     const filterArray = []
@@ -28,14 +34,14 @@ exports.fetchHistory = async (type, action, order = 'DESC') => {
 
     // if there's just type
     if(type && !action) filters = ' WHERE type = $1'
-
     // if there's just action
     if(action && !type) filters = ' WHERE action = $1'
-
     // if theres action and type
     if(action && type) filters = ' WHERE type = $1 AND action = $2'
 
-    const completeQuery = baseQuery + filters + orderby
+    const limitOffset = ` LIMIT ${limit} OFFSET ${offset}`
+
+    const completeQuery = baseQuery + filters + orderby + limitOffset
 
     const { rows: history } = await db.query(completeQuery, filterArray)
     return history
