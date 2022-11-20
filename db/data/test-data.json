@@ -5,7 +5,7 @@
       "username": "ctrlholtdel",
       "password": "$2a$10$unDZKMSdzOzvcGSYnRzOzO5hNfZFqPtcGXd4GOv1QVRA.q8/Vcl2W",
       "created_time": "2022-01-18T10:35:15.903Z",
-      "sysAdmin": true
+      "sysadmin": true
     },
     {
       "id": "2",

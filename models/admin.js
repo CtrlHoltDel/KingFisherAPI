@@ -20,6 +20,7 @@ exports.fetchHistory = async (type, action, order = 'DESC', limit = 20, offset =
     if(action && !ACTION_TYPES.includes(action)) return promiseReject()
     if((order.toUpperCase() !== 'DESC' && order.toUpperCase() !== 'ASC')) return promiseReject()
 
+
     if(/\D/.test(limit) || /\D/.test(offset) || offset % 1 !== 0 || limit % 1 !== 0) return promiseReject()
 
     if(limit > 100) limit = 100
@@ -65,10 +66,7 @@ exports.generateBackup = async () => {
 
 exports.generateHistoryBackup = async () => {
     const history = await getFullList(HISTORY_TABLE);
-    await writeFile(
-        `${__dirname.slice(0, -7)}/backup/history.json`,
-        JSON.stringify(backup)
-    );
+    return history;
 }
 
 const getCount = async (tableName) => {
