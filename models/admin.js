@@ -77,6 +77,19 @@ exports.updateUser = async (username) => {
     return { message: `${username} set to sysadmin`, id: rows[0].id }
 }
 
+exports.fetchGroupsAdmin = async () => {
+    const { rows } = await db.query(`SELECT ng.*, (SELECT COUNT(*) FROM note_group_junction ngj WHERE ngj.note_group = ng.id) as user_count FROM note_group ng`);
+    return rows
+}
+
+exports.fetchSingleGroupAdmin = async (groupId) => {
+    const { rows: group } = await db.query(`SELECT * FROM note_group WHERE id = $1`, [groupId])
+    const { rows: users } = await db.query(`SELECT * FROM note_group_junction WHERE note_group = $1`, [groupId]);
+    const { rows: noteCount } = await db.query(`SELECT COUNT(*) FROM players WHERE note_group_id = $1`, [groupId]); 
+
+    return { ...group[0], noteCount: noteCount[0].count, users }
+}
+
 const getCount = async (tableName) => {
     const { rows } = await db.query(format(`SELECT COUNT(*) FROM %I`, tableName))
     return rows

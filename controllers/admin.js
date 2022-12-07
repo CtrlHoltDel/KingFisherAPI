@@ -1,4 +1,4 @@
-const { fetchAdminUsers, fetchHistory, generateBackup, generateHistoryBackup, updateUser } = require("../models/admin");
+const { fetchAdminUsers, fetchHistory, generateBackup, generateHistoryBackup, updateUser, fetchGroupsAdmin, fetchSingleGroupAdmin } = require("../models/admin");
 const { successMessage } = require("../utils/responses");
 
 exports.getUsers = async (req, res, next) => {
@@ -50,4 +50,23 @@ exports.patchUser = async (req, res, next) => {
     next(error)
   }
 
+}
+
+exports.getGroupsAdmin = async (req, res, next) => {
+  try {
+    const groups = await fetchGroupsAdmin()
+    res.send(successMessage({ groups }))
+  } catch (error) {
+    next(error)
+  }
+}
+
+exports.getSingleGroupAdmin = async (req, res, next) => {
+  const { group_id } = req.params;
+  try {
+    const group = await fetchSingleGroupAdmin(group_id)
+    res.send(successMessage({ group }))
+  } catch (error) {
+    next(error)
+  }
 }

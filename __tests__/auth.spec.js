@@ -717,7 +717,7 @@ describe('Middleware E2E', () => {
 
 });
 
-describe('Admin', () => {
+describe('Sys Admin', () => {
     it('As a sys admin can get a list of all users', async () => {
         const { body: adminUsers } = await request(app).get("/admin/users").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
         expect(adminUsers.status).toBe(SUCCESS_STATUS);
@@ -735,7 +735,7 @@ describe('Admin', () => {
         expect(nonSysAdmin.status).toBe(ERROR_STATUS);
     })
 
-    it.only('Can set other users to sysadmin', async () => {
+    it('Can set other users to sysadmin', async () => {
         const { body: nonSysAdmin } = await login(testuser1.username, "test");
         expect(nonSysAdmin.data.sysAdmin).toBeFalsy();
 
@@ -747,11 +747,28 @@ describe('Admin', () => {
         expect(sysAdminSetUpdate.data.sysadmin).toBeTruthy();
     })
 
-    it.only('Error if trying to set a non-existant user to sysadmin', async () => {
+    it('Error if trying to set a non-existant user to sysadmin', async () => {
         const { body: settingInvalidUserSysAdmin } = await request(app).post(`/admin/user/nonuser`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(400)
         expect(settingInvalidUserSysAdmin.status).toBe(ERROR_STATUS);
         expect(settingInvalidUserSysAdmin.message).toBe("User doesn't exist");
     })
+
+    it('Returns a full list of groups and users', async () => {
+        const { body: fullGroups } = await request(app).get(`/admin/groups`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+        expect(fullGroups.status).toBe(SUCCESS_STATUS);
+        expect(fullGroups.data.groups).toHaveLength(3);
+    })
+
+    it('Can return full information about any group', async () => {
+        const { body: fullGroup } = await request(app).get(`/admin/groups/1`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+        expect(fullGroup.status).toBe(SUCCESS_STATUS);
+        expect(fullGroup.data.group.name).toBe('kingfisher');
+        expect(fullGroup.data.group.users).toHaveLength(3);
+    });
+
+    // it.only('Can get a list of all archived notes', async () => {
+    //     const { body: archivedNotes } = await request(app).get(`/admin/notes?archived=true`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+    // });
 
     describe('history && E2E', () => {
         beforeEach(async () => {
