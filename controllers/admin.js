@@ -1,4 +1,4 @@
-const { fetchAdminUsers, fetchHistory, generateBackup, generateHistoryBackup } = require("../models/admin");
+const { fetchAdminUsers, fetchHistory, generateBackup, generateHistoryBackup, updateUser } = require("../models/admin");
 const { successMessage } = require("../utils/responses");
 
 exports.getUsers = async (req, res, next) => {
@@ -12,7 +12,6 @@ exports.getUsers = async (req, res, next) => {
 
 
 exports.getHistory = async (req, res, next) => {
-  console.log("here");
   const { type, action } = req.query
   try {
     const history = await fetchHistory(type, action)
@@ -38,4 +37,17 @@ exports.createHistoryBackup = async (req, res, next) => {
   } catch (error) {
     next(error)
   }
+}
+
+exports.patchUser = async (req, res, next) => {
+
+  const { username } = req.params;
+  
+  try {
+    const response = await updateUser(username)
+    res.status(201).send(successMessage(response))
+  } catch (error) {
+    next(error)
+  }
+
 }

@@ -715,9 +715,6 @@ describe('Middleware E2E', () => {
 
     });
 
-    describe('Admin', () => {
-        
-    });
 });
 
 describe('Admin', () => {
@@ -738,8 +735,25 @@ describe('Admin', () => {
         expect(nonSysAdmin.status).toBe(ERROR_STATUS);
     })
 
-    describe.only('history && E2E', () => {
+    it.only('Can set other users to sysadmin', async () => {
+        const { body: nonSysAdmin } = await login(testuser1.username, "test");
+        expect(nonSysAdmin.data.sysAdmin).toBeFalsy();
 
+        const { body: settingSysAdmin } = await request(app).post(`/admin/user/${testuser1.username}`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(201)
+        expect(settingSysAdmin.status).toBe(SUCCESS_STATUS);
+        expect(settingSysAdmin.data.message).toBe(`${testuser1.username} set to sysadmin`);
+
+        const { body: sysAdminSetUpdate } = await login(testuser1.username, "test");
+        expect(sysAdminSetUpdate.data.sysadmin).toBeTruthy();
+    })
+
+    it.only('Error if trying to set a non-existant user to sysadmin', async () => {
+        const { body: settingInvalidUserSysAdmin } = await request(app).post(`/admin/user/nonuser`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(400)
+        expect(settingInvalidUserSysAdmin.status).toBe(ERROR_STATUS);
+        expect(settingInvalidUserSysAdmin.message).toBe("User doesn't exist");
+    })
+
+    describe('history && E2E', () => {
         beforeEach(async () => {
             const newUser = { username: 'new-user', password: "123" }
             const newPlayerName = 'newly-added-player'

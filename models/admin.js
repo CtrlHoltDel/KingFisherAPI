@@ -69,6 +69,14 @@ exports.generateHistoryBackup = async () => {
     return history;
 }
 
+exports.updateUser = async (username) => {
+    const { rows } = await db.query(`UPDATE users SET sysAdmin = $1 WHERE username = $2 RETURNING *`, [true, username]);
+
+    if(!rows.length) return Promise.reject({ status: 400, message: "User doesn't exist" });
+
+    return { message: `${username} set to sysadmin`, id: rows[0].id }
+}
+
 const getCount = async (tableName) => {
     const { rows } = await db.query(format(`SELECT COUNT(*) FROM %I`, tableName))
     return rows
