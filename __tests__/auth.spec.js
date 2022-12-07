@@ -723,6 +723,14 @@ describe('Sys Admin', () => {
         expect(adminUsers.status).toBe(SUCCESS_STATUS);
         expect(adminUsers.data.users).toHaveLength(4);
 
+        adminUsers.data.users.forEach(user => {
+            expect(user).toMatchObject({
+                username: expect.any(String),
+                created_time: expect.any(String),
+                added_player_count: expect.any(String),
+                added_notes_count: expect.any(String)
+            });
+        })
         await register('new-user', '123')
 
         const { body: adminUsersAfterAdded } = await request(app).get("/admin/users").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)

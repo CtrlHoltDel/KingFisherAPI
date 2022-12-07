@@ -7,8 +7,29 @@ const USERS_TABLE = 'users'
 
 
 exports.fetchAdminUsers = async () => {
-    const users = await getFullList(USERS_TABLE);
-    return users
+    const { rows } = await db.query(`SELECT
+    username,
+    created_time,
+    sysadmin,
+    (
+      SELECT
+        COUNT(id)
+      FROM
+        players
+      WHERE
+        created_by = users.username
+    ) AS added_player_count,
+    (
+      SELECT
+        COUNT(id)
+      FROM
+        notes
+      WHERE
+        created_by = users.username
+    ) AS added_notes_count
+  FROM
+    users`)
+    return rows
 }
 
 const promiseReject = () => Promise.reject({ status: 400, message: 'Cannot Process Request' })
