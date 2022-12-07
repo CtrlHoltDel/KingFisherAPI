@@ -8,27 +8,30 @@ const USERS_TABLE = 'users'
 
 exports.fetchAdminUsers = async () => {
     const { rows } = await db.query(`SELECT
-    username,
-    created_time,
-    sysadmin,
-    (
-      SELECT
-        COUNT(id)
-      FROM
-        players
-      WHERE
-        created_by = users.username
-    ) AS added_player_count,
-    (
-      SELECT
-        COUNT(id)
-      FROM
-        notes
-      WHERE
-        created_by = users.username
-    ) AS added_notes_count
-  FROM
-    users`)
+                                        username,
+                                        created_time,
+                                        sysadmin,
+                                        (
+                                          SELECT
+                                            COUNT(id)
+                                          FROM
+                                            players
+                                          WHERE
+                                            created_by = users.username
+                                        ) AS added_player_count,
+                                        (
+                                          SELECT
+                                            COUNT(id)
+                                          FROM
+                                            notes
+                                          WHERE
+                                            created_by = users.username
+                                        ) AS added_notes_count
+                                      FROM
+                                        users
+                                      ORDER BY added_notes_count DESC
+                                      `
+                                 )
     return rows
 }
 
