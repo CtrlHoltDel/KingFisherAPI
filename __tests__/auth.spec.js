@@ -827,7 +827,7 @@ describe('Sys Admin', () => {
         it('Can pull down history with E2E', async () => {
             const { body: allHistory } = await request(app).get("/admin/history").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
             expect(allHistory.status).toBe(SUCCESS_STATUS);
-            expect(allHistory.data.history).toHaveLength(9);
+            expect(allHistory.data.history).toHaveLength(10);
         });
 
         it('Can filter by different types', async () => {
@@ -847,9 +847,17 @@ describe('Sys Admin', () => {
             expect(notesHistoryDeleted.data.history.every(historyRecord => historyRecord.type === 'note' && historyRecord.action === 'archive')).toBeTruthy();
         })
 
-        it.only('Works with pagination', async () => {
-            const { body: playerHistory } = await request(app).get("/admin/history").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
-            console.log(playerHistory.data.history);
+        it('Works with pagination and limit', async () => {
+            const { body: playerHistory } = await request(app).get("/admin/history?limit=2&page=2").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+            expect(playerHistory.status).toBe(SUCCESS_STATUS);
+            expect(playerHistory.data.history[0].note).toBe("New Tendency");
+            expect(playerHistory.data.history[0].username).toBe('new-user');
+        });
+
+        it('Shouldn\t work with invalid queries', async () => {
+            await request(app).get("/admin/history?limit=DROP TABLE").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(400)
         });
     });
+
+    // 9d224940-3bb6-4664-9b55-8bd3b9fb538c
 })

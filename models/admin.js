@@ -37,15 +37,18 @@ const promiseReject = () => Promise.reject({ status: 400, message: 'Cannot Proce
 
 const HISTORY_TYPES = ['note', 'tendency', 'auth', 'group', 'player']
 const ACTION_TYPES = ['add', 'update', 'archive', 'create']
+
+
 exports.fetchHistory = async (type, action, order = 'DESC', limit = 20, offset = 0) => {
     if(type && !HISTORY_TYPES.includes(type)) return promiseReject()
     if(action && !ACTION_TYPES.includes(action)) return promiseReject()
     if((order.toUpperCase() !== 'DESC' && order.toUpperCase() !== 'ASC')) return promiseReject()
 
-
     if(/\D/.test(limit) || /\D/.test(offset) || offset % 1 !== 0 || limit % 1 !== 0) return promiseReject()
 
     if(limit > 100) limit = 100
+
+    if(offset > 0) offset = limit * (offset - 1);
 
     const baseQuery = `SELECT * FROM history`
     const filterArray = []
@@ -113,16 +116,14 @@ exports.fetchSingleGroupAdmin = async (groupId) => {
 }
 
 exports.fetchAdminNotes = async (archived, username) => {
-  // const { rows: notes } = await db.query(`SELECT * FROM notes WHERE archived = $1`, [archived])
-
   if(archived){
     let notes;
 
     if(username) {
-      const { rows: notesResponse } = await db.query(`SELECT h.time_stamp archive_date, n.created_time created_time, n.note, h.username archived_by, n.created_by FROM history AS h JOIN notes AS n ON note_id = n.id WHERE h.action = 'archive' AND h.username = $1`, [username])
+      const { rows: notesResponse } = await db.query(`SELECT h.time_stamp archive_date, n.created_time created_time, n.note, h.username archived_by, n.created_by FROM history AS h JOIN notes AS n ON note_id = n.id WHERE h.action = 'archive' AND h.username = $1 ORDER BY archive_date DESC`, [username])
       notes = notesResponse
     } else {
-      const { rows: notesResponse } = notes = await db.query(`SELECT h.time_stamp archive_date, n.created_time created_time, n.note, h.username archived_by, n.created_by FROM history AS h JOIN notes AS n ON note_id = n.id WHERE h.action = 'archive'`)
+      const { rows: notesResponse } = notes = await db.query(`SELECT h.time_stamp archive_date, n.created_time created_time, n.note, h.username archived_by, n.created_by FROM history AS h JOIN notes AS n ON note_id = n.id WHERE h.action = 'archive' ORDER BY archive_date DESC`)
       notes = notesResponse
     }
 
