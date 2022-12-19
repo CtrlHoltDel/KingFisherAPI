@@ -1,4 +1,4 @@
-const { getUsers, getHistory, createBackup, createHistoryBackup, patchUser, getGroupsAdmin, getSingleGroupAdmin } = require("../controllers/admin");
+const { getUsers, getHistory, createBackup, createHistoryBackup, patchUser, getGroupsAdmin, getSingleGroupAdmin, getAdminNotes } = require("../controllers/admin");
 
 const adminRouter = require("express").Router();
 
@@ -9,5 +9,6 @@ adminRouter.route('/backup/history').get(createHistoryBackup)
 adminRouter.route('/user/:username').post(patchUser)
 adminRouter.route('/groups').get(getGroupsAdmin)
 adminRouter.route('/groups/:group_id').get(getSingleGroupAdmin)
+adminRouter.get('/notes', getAdminNotes)
 
 module.exports = adminRouter;

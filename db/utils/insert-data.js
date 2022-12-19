@@ -1,6 +1,13 @@
 const db = require("../connection");
 const format = require("pg-format");
-const { USERS_TABLE, NOTE_GROUP_TABLE, PLAYERS_TABLE, NOTES_TABLE, NOTE_GROUP_JUNCTION_TABLE } = require("../../utils/constants");
+const {
+  USERS_TABLE,
+  NOTE_GROUP_TABLE,
+  PLAYERS_TABLE,
+  NOTES_TABLE,
+  NOTE_GROUP_JUNCTION_TABLE,
+  HISTORY_TABLE,
+} = require("../../utils/constants");
 
 const insertData = async ({
   users,
@@ -8,8 +15,8 @@ const insertData = async ({
   players,
   note_group,
   note_group_junction,
+  history
 }) => {
-
   const usersQuery = format(
     `INSERT INTO ${USERS_TABLE}(id, username, password, created_time, sysAdmin) VALUES %L`,
     users.map(({ id, username, password, created_time, sysadmin }) => [
@@ -17,7 +24,7 @@ const insertData = async ({
       username,
       password,
       created_time,
-      sysadmin
+      sysadmin,
     ])
   );
 
@@ -46,26 +53,66 @@ const insertData = async ({
   );
 
   const notesQuery = format(
-    `INSERT INTO ${NOTES_TABLE}(id, created_by, created_time, note, player_id, type) VALUES %L`,
-    notes.map(({ id, created_by, created_time, note, player_id, type }) => [
+    `INSERT INTO ${NOTES_TABLE}(id, created_by, created_time, note, player_id, type, archived) VALUES %L`,
+    notes.map(({ id, created_by, created_time, note, player_id, type, archived }) => [
       id,
       created_by,
       created_time,
       note,
       player_id,
       type,
+      archived || false
     ])
   );
 
   const groupJunctionQuery = format(
     `INSERT INTO ${NOTE_GROUP_JUNCTION_TABLE} (id, username, note_group, validated, admin , created_time) VALUES %L`,
     note_group_junction.map(
-      ({ id, username, note_group, validated, admin ,created_time }) => [
+      ({ id, username, note_group, validated, admin, created_time }) => [
         id,
         username,
         note_group,
         validated,
-        admin, created_time
+        admin,
+        created_time,
+      ]
+    )
+  );
+
+  const historyQuery = format(
+    `INSERT INTO ${HISTORY_TABLE}(id,
+        type,
+        action,
+        username,
+        note_group,
+        note,
+        time_stamp,
+        detail,
+        player_id,
+        note_id) VALUES %L`,
+    history.map(
+      ({
+        id,
+        type,
+        action,
+        username,
+        note_group,
+        note,
+        time_stamp,
+        detail,
+        player_id,
+        note_id,
+      }) => [
+        id,
+        type,
+        action,
+        username,
+        note_group,
+        note,
+        time_stamp,
+        detail,
+        player_id,
+        note_id,
       ]
     )
   );
@@ -75,6 +122,7 @@ const insertData = async ({
   await db.query(playersQuery);
   await db.query(notesQuery);
   await db.query(groupJunctionQuery);
+  if(history.length) await db.query(historyQuery);
 };
 
 module.exports = insertData;

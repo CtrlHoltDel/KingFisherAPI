@@ -209,7 +209,8 @@
       "created_time": "2022-01-18T10:35:15.903Z",
       "note": "note-contents 7",
       "player_id": "2",
-      "type": "note"
+      "type": "note",
+      "archived": true
     },
     {
       "id": "8",
@@ -226,6 +227,20 @@
       "note": "tendency-contents 2",
       "player_id": "1",
       "type": "tendency"
+    }
+  ],
+  "history": [
+    {
+      "id": "1",
+      "type": "note",
+      "action": "archive",
+      "username": "ctrlholtdel",
+      "note_group": null,
+      "note": "note-contents 7",
+      "time_stamp": "2022-01-28T10:35:15.903Z",
+      "detail": "ctrlholtdel deleted note note-contents 7 from player 2",
+      "player_id": "2",
+      "note_id": "7"
     }
   ]
 }

@@ -3,8 +3,6 @@ const db = require("../db/connection");
 const { writeFile } = require("fs/promises");
 
 const { TABLES_NAMES, HISTORY_TABLE } = require("../utils/constants");
-const USERS_TABLE = 'users'
-
 
 exports.fetchAdminUsers = async () => {
     const { rows } = await db.query(`SELECT
@@ -112,6 +110,25 @@ exports.fetchSingleGroupAdmin = async (groupId) => {
     const { rows: noteCount } = await db.query(`SELECT COUNT(*) FROM players WHERE note_group_id = $1`, [groupId]); 
 
     return { ...group[0], noteCount: noteCount[0].count, users }
+}
+
+exports.fetchAdminNotes = async (archived, username) => {
+  // const { rows: notes } = await db.query(`SELECT * FROM notes WHERE archived = $1`, [archived])
+
+  if(archived){
+    let notes;
+
+    if(username) {
+      const { rows: notesResponse } = await db.query(`SELECT h.time_stamp archive_date, n.created_time created_time, n.note, h.username archived_by, n.created_by FROM history AS h JOIN notes AS n ON note_id = n.id WHERE h.action = 'archive' AND h.username = $1`, [username])
+      notes = notesResponse
+    } else {
+      const { rows: notesResponse } = notes = await db.query(`SELECT h.time_stamp archive_date, n.created_time created_time, n.note, h.username archived_by, n.created_by FROM history AS h JOIN notes AS n ON note_id = n.id WHERE h.action = 'archive'`)
+      notes = notesResponse
+    }
+
+    return notes
+  }
+
 }
 
 const getCount = async (tableName) => {

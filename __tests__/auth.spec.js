@@ -108,8 +108,7 @@ beforeAll(async () => {
 
     const { body: testUser1Groups } = await getGroups(testuser1.token)
 
-    ferretGroup = testUser1Groups.data.groups[1]
-    
+    ferretGroup = testUser1Groups.data.groups[1]    
 })
 
 describe('Ping', () => {
@@ -774,9 +773,17 @@ describe('Sys Admin', () => {
         expect(fullGroup.data.group.users).toHaveLength(3);
     });
 
-    // it.only('Can get a list of all archived notes', async () => {
-    //     const { body: archivedNotes } = await request(app).get(`/admin/notes?archived=true`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
-    // });
+    it('Can get a list of all archived notes', async () => {
+        const { body: archivedNotes } = await request(app).get(`/admin/notes?archived=true`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+        expect(archivedNotes.status).toBe(SUCCESS_STATUS);
+        expect(archivedNotes.data.notes).toHaveLength(1);
+        await archiveNote(ctrlholtdel.token, "3");
+
+        
+        const { body: archivedNotesAfter } = await request(app).get(`/admin/notes?archived=true`).set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+        expect(archivedNotesAfter.status).toBe(SUCCESS_STATUS);
+        expect(archivedNotesAfter.data.notes).toHaveLength(2);
+    });
 
     describe('history && E2E', () => {
         beforeEach(async () => {
@@ -839,5 +846,10 @@ describe('Sys Admin', () => {
             const { body: notesHistoryDeleted } = await request(app).get("/admin/history?type=note&action=archive").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
             expect(notesHistoryDeleted.data.history.every(historyRecord => historyRecord.type === 'note' && historyRecord.action === 'archive')).toBeTruthy();
         })
+
+        it.only('Works with pagination', async () => {
+            const { body: playerHistory } = await request(app).get("/admin/history").set(AUTHORIZATION_HEADER, `Bearer ${ctrlholtdel.token}`).expect(200)
+            console.log(playerHistory.data.history);
+        });
     });
 })
